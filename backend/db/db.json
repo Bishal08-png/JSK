@@ -1,0 +1,104 @@
+{
+  "users": [
+    {
+      "_id": "admin-001",
+      "name": "JSK Admin",
+      "email": "admin@jsk.com",
+      "password": "$2a$12$qEON5cJSkTHxH8sNUV97V.Sheep0x48Yy4hl9QPtLYZMLUV0CW1qO",
+      "role": "admin",
+      "createdAt": "2026-05-01T06:42:10.981Z"
+    },
+    {
+      "_id": "user-1777618373911",
+      "name": "bishal",
+      "email": "bishal@gmail.com",
+      "password": "$2a$12$tH.zFC4ZOkQlqJSJdXyTJ.Y7dlua8Dxi.JukOGpQNBjJUuPj9rDXe",
+      "role": "customer",
+      "createdAt": "2026-05-01T06:52:53.912Z"
+    }
+  ],
+  "products": [
+    {
+      "_id": "prod-1777618123961",
+      "name": "DOMS Pencil",
+      "quantity": 98,
+      "mrp": 10,
+      "discountPercent": 0,
+      "finalPrice": 10,
+      "dateAdded": "2026-05-01T06:48:43.964Z",
+      "isActive": true
+    },
+    {
+      "_id": "prod-1777618608315",
+      "name": "Apsara pencil",
+      "quantity": 1,
+      "mrp": 5,
+      "discountPercent": 1.99,
+      "finalPrice": 4.9,
+      "dateAdded": "2026-05-01T06:56:48.317Z",
+      "isActive": true
+    }
+  ],
+  "bills": [
+    {
+      "_id": "bill-1777637257907",
+      "billNumber": "JSK-1777637257909",
+      "customerName": "Walk-in Customer",
+      "items": [
+        {
+          "productId": "prod-1777618123961",
+          "productName": "DOMS Pencil",
+          "quantity": 1,
+          "mrp": 10,
+          "discountPercent": 0,
+          "finalPrice": 10,
+          "itemTotal": 10
+        },
+        {
+          "productId": "prod-1777618608315",
+          "productName": "Apsara pencil",
+          "quantity": 1,
+          "mrp": 5,
+          "discountPercent": 0,
+          "finalPrice": 5,
+          "itemTotal": 5
+        }
+      ],
+      "subtotal": 15,
+      "totalDiscount": 0,
+      "grandTotal": 15,
+      "createdAt": "2026-05-01T12:07:37.909Z",
+      "createdBy": "admin-001"
+    },
+    {
+      "_id": "bill-1777637864596",
+      "billNumber": "JSK-1777637864597",
+      "customerName": "Walk-in Customer",
+      "items": [
+        {
+          "productId": "prod-1777618123961",
+          "productName": "DOMS Pencil",
+          "quantity": 1,
+          "mrp": 10,
+          "discountPercent": 0,
+          "finalPrice": 10,
+          "itemTotal": 10
+        },
+        {
+          "productId": "prod-1777618608315",
+          "productName": "Apsara pencil",
+          "quantity": 4,
+          "mrp": 5,
+          "discountPercent": 1.99,
+          "finalPrice": 4.9,
+          "itemTotal": 19.6
+        }
+      ],
+      "subtotal": 30,
+      "totalDiscount": 0.4,
+      "grandTotal": 29.6,
+      "createdAt": "2026-05-01T12:17:44.597Z",
+      "createdBy": "admin-001"
+    }
+  ]
+}
