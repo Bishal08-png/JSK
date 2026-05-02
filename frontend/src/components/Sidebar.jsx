@@ -1,10 +1,9 @@
-import { useState } from 'react'
 import { NavLink, useNavigate } from 'react-router-dom'
-import { useAuth } from '../context/AuthContext'
+import { useAuth } from '../context/useAuth'
 import toast from 'react-hot-toast'
 import {
   LayoutDashboard, Package, Receipt, History,
-  ShoppingBag, LogOut, Menu, X, Store
+  ShoppingBag, LogOut
 } from 'lucide-react'
 
 export default function Sidebar({ open, setOpen }) {

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import api from '../../api/axios'
 import toast from 'react-hot-toast'
-import { Plus, Pencil, Trash2, Search, X } from 'lucide-react'
+import { Plus, Pencil, Trash2, Search } from 'lucide-react'
 
 const emptyForm = { name: '', quantity: '', mrp: '', discountPercent: '' }
 

@@ -1,14 +1,13 @@
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState } from 'react'
 import api from '../../api/axios'
 import toast from 'react-hot-toast'
 import {
   Search, Package, ShoppingCart, Plus, Minus,
-  Trash2, X, Tag, IndianRupee, ChevronRight
+  Trash2, X, Tag, ChevronRight
 } from 'lucide-react'
 
 /* ─── helpers ───────────────────────────────────── */
 const fmt     = (n)  => `₹${Number(n).toFixed(2)}`
-const dateStr = (d)  => new Date(d).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })
 
 /* ─── Cart Drawer ───────────────────────────────── */
 function CartDrawer({ cart, products, onClose, onQtyChange, onRemove }) {

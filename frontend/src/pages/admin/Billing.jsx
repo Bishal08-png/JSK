@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef } from 'react'
 import api from '../../api/axios'
 import toast from 'react-hot-toast'
-import { Plus, Minus, Trash2, Download, Printer, Search } from 'lucide-react'
+import { Plus, Minus, Trash2, Download, Search } from 'lucide-react'
 import jsPDF from 'jspdf'
 import html2canvas from 'html2canvas'
 
