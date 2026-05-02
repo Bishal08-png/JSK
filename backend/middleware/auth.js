@@ -1,14 +1,18 @@
 const jwt  = require('jsonwebtoken')
 const User = require('../models/User')
 
-const JWT_SECRET = process.env.JWT_SECRET || 'jsk_secret_2024'
+const JWT_SECRET = process.env.JWT_SECRET || (process.env.NODE_ENV === 'production' ? undefined : 'jsk_secret_2024')
 
 const protect = async (req, res, next) => {
   let token
-  if (req.headers.authorization && req.headers.authorization.startsWith('Bearer'))
+
+  // Clients should send: Authorization: Bearer <jwt>
+  if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
     token = req.headers.authorization.split(' ')[1]
+  }
 
   if (!token) return res.status(401).json({ message: 'Not authorized, no token' })
+  if (!JWT_SECRET) return res.status(500).json({ message: 'JWT secret is not configured' })
 
   try {
     const decoded = jwt.verify(token, JWT_SECRET)
