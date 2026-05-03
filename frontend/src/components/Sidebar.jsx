@@ -6,6 +6,8 @@ import {
   ShoppingBag, LogOut
 } from 'lucide-react'
 
+const krishnaImageUrl = 'https://images.pexels.com/photos/36887683/pexels-photo-36887683.jpeg'
+
 export default function Sidebar({ open, setOpen }) {
   const { user, logout } = useAuth()
   const navigate = useNavigate()
@@ -32,7 +34,9 @@ export default function Sidebar({ open, setOpen }) {
       <div className={`sidebar-overlay ${open ? 'open' : ''}`} onClick={() => setOpen(false)} />
       <aside className={`sidebar ${open ? 'open' : ''}`}>
         <div className="sidebar-logo">
-          <div className="logo-icon">J</div>
+          <div className="logo-icon">
+            <img src={krishnaImageUrl} alt="Radha Krishna" />
+          </div>
           <div>
             <div className="logo-text">JSK</div>
             <div className="logo-sub">STATIONERY SHOP</div>

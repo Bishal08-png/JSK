@@ -44,8 +44,9 @@ body {
 .sidebar-logo .logo-icon {
   width: 42px; height: 42px; background: linear-gradient(135deg, var(--primary), var(--secondary));
   border-radius: 10px; display: flex; align-items: center; justify-content: center;
-  font-size: 20px; font-weight: 800; color: #fff;
+  font-size: 20px; font-weight: 800; color: #fff; overflow: hidden;
 }
+.sidebar-logo .logo-icon img { width: 100%; height: 100%; object-fit: cover; display: block; }
 .sidebar-logo .logo-text { font-size: 22px; font-weight: 800; letter-spacing: 2px;
   background: linear-gradient(135deg, #fff, var(--secondary)); -webkit-background-clip: text;
   -webkit-text-fill-color: transparent; }

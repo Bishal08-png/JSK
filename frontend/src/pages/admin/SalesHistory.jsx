@@ -153,60 +153,60 @@ export default function SalesHistory() {
     root.style.width = '800px' // A4 approx width in px
     root.style.background = '#ffffff'
     root.style.color = '#000000'
-    root.style.padding = '40px'
+    root.style.padding = '24px'
     root.style.fontFamily = 'Inter, system-ui, sans-serif'
     
     root.innerHTML = `
-      <div style="border-bottom: 2px solid #4c1d95; padding-bottom: 15px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: flex-end;">
+      <div style="border-bottom: 2px solid #4c1d95; padding-bottom: 10px; margin-bottom: 14px; display: flex; justify-content: space-between; align-items: flex-end;">
         <div>
-          <h1 style="margin: 0; color: #4c1d95; font-size: 24px; font-weight: 800;">JSK STATIONERY SHOP</h1>
-          <p style="margin: 5px 0 0; color: #6b7280; font-size: 14px; font-weight: 600;">Daily Sales Report</p>
+          <h1 style="margin: 0; color: #4c1d95; font-size: 21px; font-weight: 800;">JSK STATIONERY SHOP</h1>
+          <p style="margin: 3px 0 0; color: #6b7280; font-size: 12px; font-weight: 600;">Daily Sales Report</p>
         </div>
         <div style="text-align: right;">
-          <p style="margin: 0; font-size: 14px; color: #374151;">Date: <strong>${reportDateStr}</strong></p>
-          <p style="margin: 2px 0 0; font-size: 11px; color: #9ca3af;">Generated on ${new Date().toLocaleString()}</p>
+          <p style="margin: 0; font-size: 12px; color: #374151;">Date: <strong>${reportDateStr}</strong></p>
+          <p style="margin: 2px 0 0; font-size: 10px; color: #9ca3af;">Generated on ${new Date().toLocaleString()}</p>
         </div>
       </div>
 
-      <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 30px;">
-        <div style="background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 8px; padding: 15px; text-align: center;">
-          <p style="margin: 0 0 5px; font-size: 11px; color: #6b7280; text-transform: uppercase; letter-spacing: 0.05em;">Day Total</p>
-          <p style="margin: 0; font-size: 18px; font-weight: 800; color: #059669;">${fmt(totalRevenue)}</p>
+      <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 16px;">
+        <div style="background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 7px; padding: 9px; text-align: center;">
+          <p style="margin: 0 0 3px; font-size: 9px; color: #6b7280; text-transform: uppercase; letter-spacing: 0.05em;">Day Total</p>
+          <p style="margin: 0; font-size: 15px; font-weight: 800; color: #059669;">${fmt(totalRevenue)}</p>
         </div>
-        <div style="background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 8px; padding: 15px; text-align: center;">
-          <p style="margin: 0 0 5px; font-size: 11px; color: #6b7280; text-transform: uppercase; letter-spacing: 0.05em;">Total Bills</p>
-          <p style="margin: 0; font-size: 18px; font-weight: 800; color: #4c1d95;">${bills.length}</p>
+        <div style="background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 7px; padding: 9px; text-align: center;">
+          <p style="margin: 0 0 3px; font-size: 9px; color: #6b7280; text-transform: uppercase; letter-spacing: 0.05em;">Total Bills</p>
+          <p style="margin: 0; font-size: 15px; font-weight: 800; color: #4c1d95;">${bills.length}</p>
         </div>
-        <div style="background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 8px; padding: 15px; text-align: center;">
-          <p style="margin: 0 0 5px; font-size: 11px; color: #6b7280; text-transform: uppercase; letter-spacing: 0.05em;">Total Discount</p>
-          <p style="margin: 0; font-size: 18px; font-weight: 800; color: #d97706;">${fmt(totalDiscount)}</p>
+        <div style="background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 7px; padding: 9px; text-align: center;">
+          <p style="margin: 0 0 3px; font-size: 9px; color: #6b7280; text-transform: uppercase; letter-spacing: 0.05em;">Total Discount</p>
+          <p style="margin: 0; font-size: 15px; font-weight: 800; color: #d97706;">${fmt(totalDiscount)}</p>
         </div>
       </div>
 
-      <table style="width: 100%; border-collapse: collapse; font-size: 12px; color: #000000;">
+      <table style="width: 100%; border-collapse: collapse; font-size: 10px; color: #000000;">
         <thead>
           <tr style="background: #f3f4f6; text-align: left; color: #4c1d95;">
-            <th style="padding: 10px; border: 1px solid #e5e7eb;">BILL ID</th>
-            <th style="padding: 10px; border: 1px solid #e5e7eb;">CUSTOMER</th>
-            <th style="padding: 10px; border: 1px solid #e5e7eb;">TIME</th>
-            <th style="padding: 10px; border: 1px solid #e5e7eb;">ITEMS</th>
-            <th style="padding: 10px; border: 1px solid #e5e7eb; text-align: right;">AMOUNT</th>
+            <th style="padding: 5px 7px; border: 1px solid #e5e7eb;">BILL ID</th>
+            <th style="padding: 5px 7px; border: 1px solid #e5e7eb;">CUSTOMER</th>
+            <th style="padding: 5px 7px; border: 1px solid #e5e7eb;">TIME</th>
+            <th style="padding: 5px 7px; border: 1px solid #e5e7eb;">ITEMS</th>
+            <th style="padding: 5px 7px; border: 1px solid #e5e7eb; text-align: right;">AMOUNT</th>
           </tr>
         </thead>
         <tbody>
           ${bills.map(b => `
             <tr>
-              <td style="padding: 10px; border: 1px solid #e5e7eb; font-weight: 700; color: #111827;">${b.billNumber}</td>
-              <td style="padding: 10px; border: 1px solid #e5e7eb; color: #374151;">${b.customerName}</td>
-              <td style="padding: 10px; border: 1px solid #e5e7eb; color: #374151;">${fmtTime(b.createdAt)}</td>
-              <td style="padding: 10px; border: 1px solid #e5e7eb; color: #374151;">${b.items.map(i => i.productName).join(', ')}</td>
-              <td style="padding: 10px; border: 1px solid #e5e7eb; text-align: right; font-weight: 800; color: #111827;">${fmt(b.grandTotal)}</td>
+              <td style="padding: 5px 7px; border: 1px solid #e5e7eb; font-weight: 700; color: #111827;">${b.billNumber}</td>
+              <td style="padding: 5px 7px; border: 1px solid #e5e7eb; color: #374151;">${b.customerName}</td>
+              <td style="padding: 5px 7px; border: 1px solid #e5e7eb; color: #374151;">${fmtTime(b.createdAt)}</td>
+              <td style="padding: 5px 7px; border: 1px solid #e5e7eb; color: #374151;">${b.items.map(i => i.productName).join(', ')}</td>
+              <td style="padding: 5px 7px; border: 1px solid #e5e7eb; text-align: right; font-weight: 800; color: #111827;">${fmt(b.grandTotal)}</td>
             </tr>
           `).join('')}
         </tbody>
       </table>
 
-      <div style="margin-top: 40px; border-top: 1px dashed #e5e7eb; padding-top: 15px; text-align: center; color: #9ca3af; font-size: 10px;">
+      <div style="margin-top: 20px; border-top: 1px dashed #e5e7eb; padding-top: 10px; text-align: center; color: #9ca3af; font-size: 9px;">
         This is an electronically generated report from JSK Stationery Management System.
       </div>
     `
