@@ -17,8 +17,8 @@
   /* Sidebar / topbar use specific values (not vars) to stay visible */
 
   /* Text */
-  --text:           #0b3a52;   /* deep navy – great on light bg */
-  --text-muted:     #3a7a99;   /* muted blue-grey  */
+  --text:           #041e2e;   /* very dark navy for max contrast */
+  --text-muted:     #1b5472;   /* darker blue-grey for readability */
 
   /* Border */
   --border:         #9dd0e8;   /* clear sky border */

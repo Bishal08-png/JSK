@@ -42,8 +42,6 @@ export default function Dashboard() {
     { label: 'Total Bills',    value: stats?.totalBills ?? '-',    icon: <Receipt />,    color: '#3ba8d0', glow: 'rgba(59,168,208,0.15)' },
     { label: "Today's Sales",  value: fmt(stats?.todaySales),      icon: <TrendingUp />, color: '#0ea5c9', glow: 'rgba(14,165,201,0.15)' },
     { label: "Today's Bills",  value: stats?.todayBills ?? '-',    icon: <ShoppingBag />,color: '#2d87aa', glow: 'rgba(45,135,170,0.15)' },
-    { label: 'Total Revenue',  value: fmt(totalRevenue),           icon: <Banknote />,   color: '#0d7fad', glow: 'rgba(13,127,173,0.15)' },
-    { label: 'Customers',      value: customers.length,            icon: <Users />,      color: '#5ecef5', glow: 'rgba(94,206,245,0.15)' },
   ]
 
   return (

@@ -49,7 +49,10 @@ export default function Layout() {
         </div>
         <footer className="app-footer">
           <strong>{business.name}</strong>
-          <span>{business.address}</span>
+          <span style={{ textAlign: 'right' }}>
+            {business.address}<br />
+            Phone: +91 8910851289
+          </span>
         </footer>
       </main>
     </div>
