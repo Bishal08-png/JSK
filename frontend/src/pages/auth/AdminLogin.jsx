@@ -36,14 +36,18 @@ export default function AdminLogin() {
     <div className="auth-page">
       <div className="auth-card">
         <div className="auth-logo">
-          <div className="big-logo" style={{ background: 'linear-gradient(135deg, #4c1d95, #f59e0b)' }}>{business.initials}</div>
+          <div className="big-logo">{business.initials}</div>
           <h1>{business.initials}</h1>
           <p>Admin Portal</p>
         </div>
         <h2 className="auth-title">Admin Login</h2>
         <p className="auth-sub">Restricted access. Authorized personnel only.</p>
-        <div style={{ background:'rgba(245,158,11,0.08)', border:'1px solid rgba(245,158,11,0.25)', borderRadius:10, padding:'10px 14px', marginBottom:16, fontSize:12, color:'#fbbf24' }}>
-          Change the default password from Profile after first login.
+        <div style={{
+          background: 'rgba(46,157,200,0.08)', border: '1px solid rgba(46,157,200,0.25)',
+          borderRadius: 10, padding: '10px 14px', marginBottom: 16, fontSize: 12,
+          color: 'var(--primary-dark)'
+        }}>
+          🔐 Change the default password from Profile after first login.
         </div>
         {error && <div className="alert alert-error">{error}</div>}
         <form onSubmit={handleSubmit}>

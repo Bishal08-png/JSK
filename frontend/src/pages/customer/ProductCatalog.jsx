@@ -211,7 +211,7 @@ function CartDrawer({ cart, products, onClose, onQtyChange, onRemove }) {
 
             {/* Info note */}
             <div style={{
-              background: 'rgba(139,92,246,0.08)', border: '1px solid rgba(139,92,246,0.2)',
+              background: 'rgba(46,157,200,0.06)', border: '1px solid rgba(46,157,200,0.18)',
               borderRadius: 10, padding: '10px 14px', fontSize: 12, color: 'var(--text-muted)', lineHeight: 1.6
             }}>
               📋 This is a <strong style={{ color: 'var(--text)' }}>price estimate</strong> for your reference.
@@ -302,13 +302,13 @@ export default function ProductCatalog() {
           style={{
             display: 'flex', alignItems: 'center', gap: 10,
             background: cartCount > 0
-              ? 'linear-gradient(135deg, var(--primary), var(--primary-light))'
+              ? 'linear-gradient(135deg, var(--primary-dark), var(--primary))'
               : 'var(--bg-card2)',
             border: cartCount > 0 ? 'none' : '1px solid var(--border)',
             borderRadius: 12, padding: '10px 18px', cursor: 'pointer',
             color: cartCount > 0 ? '#fff' : 'var(--text)',
             fontFamily: 'inherit', fontWeight: 700, fontSize: 14,
-            boxShadow: cartCount > 0 ? '0 4px 20px rgba(108,62,184,0.4)' : 'none',
+            boxShadow: cartCount > 0 ? '0 4px 20px rgba(46,157,200,0.4)' : 'none',
             transition: 'all 0.25s', position: 'relative'
           }}
         >
@@ -320,7 +320,7 @@ export default function ProductCatalog() {
                 height: '1px', width: '1px', background: 'rgba(255,255,255,0.3)',
                 borderRadius: '50%', display: 'inline-block', margin: '0 2px'
               }} />
-              <span style={{ color: '#a5f3d4', fontSize: 15, fontWeight: 800 }}>{fmt(cartTotal)}</span>
+              <span style={{ color: '#d0f4ff', fontSize: 15, fontWeight: 800 }}>{fmt(cartTotal)}</span>
             </>
           ) : (
             <span>Cart</span>
@@ -330,8 +330,8 @@ export default function ProductCatalog() {
 
       {/* Welcome Banner */}
       <div style={{
-        background: 'linear-gradient(135deg, rgba(108,62,184,0.25), rgba(245,158,11,0.15))',
-        border: '1px solid rgba(108,62,184,0.3)',
+        background: 'linear-gradient(135deg, rgba(46,157,200,0.15), rgba(94,206,245,0.10))',
+        border: '1px solid rgba(46,157,200,0.25)',
         borderRadius: 16, padding: '18px 24px', marginBottom: 24,
         display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap'
       }}>
@@ -347,9 +347,9 @@ export default function ProductCatalog() {
             onClick={() => setCartOpen(true)}
             style={{
               display: 'flex', alignItems: 'center', gap: 6,
-              background: 'rgba(139,92,246,0.2)', border: '1px solid rgba(139,92,246,0.4)',
+              background: 'rgba(46,157,200,0.15)', border: '1px solid rgba(46,157,200,0.35)',
               borderRadius: 10, padding: '8px 14px', cursor: 'pointer',
-              color: 'var(--primary-light)', fontFamily: 'inherit', fontWeight: 600, fontSize: 13
+              color: 'var(--primary-dark)', fontFamily: 'inherit', fontWeight: 600, fontSize: 13
             }}
           >
             View Cart <ChevronRight size={14} />
@@ -427,10 +427,10 @@ export default function ProductCatalog() {
                       onClick={() => addToCart(p)}
                       style={{
                         width: '100%', padding: '9px', borderRadius: 10, border: 'none',
-                        background: 'linear-gradient(135deg, var(--primary), var(--primary-light))',
+                        background: 'linear-gradient(135deg, var(--primary-dark), var(--primary))',
                         color: '#fff', fontFamily: 'inherit', fontWeight: 700, fontSize: 13,
                         cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        gap: 6, boxShadow: '0 3px 12px rgba(108,62,184,0.35)', transition: 'all 0.2s'
+                        gap: 6, boxShadow: '0 3px 12px rgba(46,157,200,0.35)', transition: 'all 0.2s'
                       }}
                       onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-1px)'}
                       onMouseLeave={e => e.currentTarget.style.transform = 'translateY(0)'}
@@ -539,12 +539,12 @@ export default function ProductCatalog() {
             onClick={() => setCartOpen(true)}
             style={{
               display: 'flex', alignItems: 'center', gap: 14,
-              background: 'linear-gradient(135deg, #4c1d95, var(--primary-light))',
-              border: '1px solid rgba(139,92,246,0.5)',
+              background: 'linear-gradient(135deg, var(--primary-dark), var(--primary-light))',
+              border: '1px solid rgba(46,157,200,0.4)',
               borderRadius: 50, padding: '14px 28px',
               cursor: 'pointer', color: '#fff', fontFamily: 'inherit',
               fontWeight: 700, fontSize: 15,
-              boxShadow: '0 8px 32px rgba(108,62,184,0.55)',
+              boxShadow: '0 8px 32px rgba(46,157,200,0.45)',
               whiteSpace: 'nowrap'
             }}
           >

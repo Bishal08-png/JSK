@@ -24,8 +24,8 @@ export default function WelcomeScreen() {
   return (
     <div className="welcome-screen">
       <div style={{ position: 'absolute', top: 20, left: '50%', transform: 'translateX(-50%)', display: 'flex', alignItems: 'center', gap: 10 }}>
-        <div style={{ width: 36, height: 36, borderRadius: 9, background: 'linear-gradient(135deg, #6c3eb8, #f59e0b)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900, fontSize: 14 }}>{business.initials}</div>
-        <span style={{ fontWeight: 800, fontSize: 20, letterSpacing: 1, background: 'linear-gradient(135deg, #fff, #f59e0b)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>{business.initials}</span>
+        <div style={{ width: 36, height: 36, borderRadius: 9, background: 'linear-gradient(135deg, var(--primary-dark), var(--primary-light))', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900, fontSize: 14, color: '#fff' }}>{business.initials}</div>
+        <span style={{ fontWeight: 800, fontSize: 20, letterSpacing: 1, color: 'var(--primary-dark)' }}>{business.initials}</span>
       </div>
 
       <div className="welcome-image-wrap">
@@ -35,19 +35,19 @@ export default function WelcomeScreen() {
           alt="Radha Krishna blessings"
           onError={e => { e.target.src = 'https://images.pexels.com/photos/36887683/pexels-photo-36887683.jpeg' }}
         />
-        <div style={{ position: 'absolute', inset: 0, borderRadius: '50%', background: 'radial-gradient(circle at center, transparent 40%, rgba(108,62,184,0.15) 100%)', pointerEvents: 'none' }} />
+        <div style={{ position: 'absolute', inset: 0, borderRadius: '50%', background: 'radial-gradient(circle at center, transparent 40%, rgba(46,157,200,0.12) 100%)', pointerEvents: 'none' }} />
       </div>
 
-      <p className="welcome-greeting">Jai Shri Krishna</p>
+      <p className="welcome-greeting">Jai Shri Krishna 🌸</p>
       <h1 className="welcome-title">Welcome to {business.name}</h1>
       <p className="welcome-sub">
         {user?.role === 'admin'
-          ? `Hello, ${user?.name} - Admin Dashboard awaits`
-          : `Hello, ${user?.name} - Browse our stationery collection`}
+          ? `Hello, ${user?.name} – Admin Dashboard awaits`
+          : `Hello, ${user?.name} – Browse our stationery collection`}
       </p>
 
-      <div style={{ width: '240px', height: 4, background: 'rgba(255,255,255,0.1)', borderRadius: 10, overflow: 'hidden', marginBottom: 20 }}>
-        <div style={{ height: '100%', width: `${progress}%`, background: 'linear-gradient(90deg, #6c3eb8, #f59e0b)', borderRadius: 10, transition: 'width 0.08s linear' }} />
+      <div style={{ width: '240px', height: 4, background: 'rgba(46,157,200,0.15)', borderRadius: 10, overflow: 'hidden', marginBottom: 20 }}>
+        <div style={{ height: '100%', width: `${progress}%`, background: 'linear-gradient(90deg, var(--primary-dark), var(--primary-light))', borderRadius: 10, transition: 'width 0.08s linear' }} />
       </div>
 
       <button
@@ -58,7 +58,7 @@ export default function WelcomeScreen() {
         Continue to {user?.role === 'admin' ? 'Admin Panel' : 'Shop'}
       </button>
 
-      <p style={{ marginTop: 16, fontSize: 12, color: 'rgba(255,255,255,0.3)' }}>Auto-redirecting in a moment...</p>
+      <p style={{ marginTop: 16, fontSize: 12, color: 'var(--text-muted)' }}>Auto-redirecting in a moment...</p>
     </div>
   )
 }

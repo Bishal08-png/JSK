@@ -149,7 +149,7 @@ export default function Billing() {
                     <div>
                       <div style={{ fontWeight: 600, fontSize: 14 }}>{p.name}</div>
                       <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>
-                        Stock: {p.quantity} | MRP: ₹{p.mrp} | Final: <span style={{ color: 'var(--accent)', fontWeight: 700 }}>₹{p.finalPrice}</span>
+                        Stock: {p.quantity} | MRP: ₹{p.mrp} | Final: <span style={{ color: 'var(--primary-dark)', fontWeight: 700 }}>₹{p.finalPrice}</span>
                       </div>
                     </div>
                     <button className="btn btn-primary btn-sm" onClick={() => addToCart(p)}>
@@ -182,7 +182,7 @@ export default function Billing() {
                             style={{ width: 48, textAlign: 'center', background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 7, color: 'var(--text)', padding: '4px', fontSize: 13 }} />
                           <button className="btn btn-secondary btn-sm" style={{ padding: '4px 9px' }} onClick={() => updateQty(item.productId, item.qty + 1)}><Plus size={12} /></button>
                         </div>
-                        <span style={{ color: 'var(--accent)', fontWeight: 700, fontSize: 14 }}>₹{(item.finalPrice * item.qty).toFixed(2)}</span>
+                        <span style={{ color: 'var(--primary-dark)', fontWeight: 700, fontSize: 14 }}>₹{(item.finalPrice * item.qty).toFixed(2)}</span>
                       </div>
                     </div>
                   ))}
@@ -191,10 +191,10 @@ export default function Billing() {
                   <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, color: 'var(--text-muted)', marginBottom: 4 }}>
                     <span>Subtotal</span><span>₹{subtotal.toFixed(2)}</span>
                   </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, color: '#34d399', marginBottom: 8 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, color: 'var(--success)', marginBottom: 8 }}>
                     <span>Discount</span><span>- ₹{discount.toFixed(2)}</span>
                   </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 18, fontWeight: 800, color: 'var(--accent)' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 18, fontWeight: 800, color: 'var(--primary-dark)' }}>
                     <span>Grand Total</span><span>₹{grandTotal.toFixed(2)}</span>
                   </div>
                 </div>

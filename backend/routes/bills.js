@@ -127,6 +127,64 @@ router.get('/daywise', protect, adminOnly, async (req, res) => {
   } catch (err) { res.status(500).json({ message: err.message }) }
 })
 
+// PATCH /api/bills/:id  — edit bill items (e.g. product exchange)
+router.patch('/:id', protect, adminOnly, async (req, res) => {
+  try {
+    const bill = await Bill.findById(req.params.id)
+    if (!bill) return res.status(404).json({ message: 'Bill not found' })
+
+    const { customerName, items } = req.body
+    if (!items || items.length === 0)
+      return res.status(400).json({ message: 'No items provided' })
+
+    // Restore old stock first
+    for (const oldItem of bill.items) {
+      await Product.findByIdAndUpdate(oldItem.productId, { $inc: { quantity: oldItem.quantity } })
+    }
+
+    // Recalculate with new items
+    let subtotal = 0, totalDiscount = 0
+    const billItems = []
+
+    for (const item of items) {
+      const product = await Product.findOne({ _id: item.productId, isActive: true })
+      if (!product) return res.status(404).json({ message: `Product not found: ${item.productId}` })
+      if (product.quantity < item.quantity)
+        return res.status(400).json({ message: `Insufficient stock for "${product.name}"` })
+
+      const itemTotal = parseFloat((product.finalPrice * item.quantity).toFixed(2))
+      const itemMRP   = parseFloat((product.mrp        * item.quantity).toFixed(2))
+      subtotal      += itemMRP
+      totalDiscount += parseFloat((itemMRP - itemTotal).toFixed(2))
+
+      billItems.push({
+        productId:       product._id,
+        productName:     product.name,
+        quantity:        item.quantity,
+        mrp:             product.mrp,
+        discountPercent: product.discountPercent,
+        finalPrice:      product.finalPrice,
+        itemTotal
+      })
+
+      // Deduct new stock
+      product.quantity -= item.quantity
+      await product.save()
+    }
+
+    const grandTotal = parseFloat((subtotal - totalDiscount).toFixed(2))
+
+    bill.customerName  = customerName || bill.customerName
+    bill.items         = billItems
+    bill.subtotal      = parseFloat(subtotal.toFixed(2))
+    bill.totalDiscount = parseFloat(totalDiscount.toFixed(2))
+    bill.grandTotal    = grandTotal
+    await bill.save()
+
+    res.json(bill)
+  } catch (err) { res.status(500).json({ message: err.message }) }
+})
+
 // DELETE /api/bills/:id
 router.delete('/:id', protect, adminOnly, async (req, res) => {
   try {

@@ -3,7 +3,7 @@ import api from '../../api/axios'
 import toast from 'react-hot-toast'
 import {
   Calendar, ChevronDown, ChevronUp, Trash2,
-  LayoutList, BarChart2, AlertTriangle, X, Download
+  LayoutList, BarChart2, AlertTriangle, X, Download, Pencil, Plus, Minus
 } from 'lucide-react'
 import html2canvas from 'html2canvas'
 import jsPDF from 'jspdf'
@@ -75,6 +75,98 @@ function DeleteModal({ bill, onConfirm, onCancel }) {
   )
 }
 
+/* ─── Edit Bill Modal ─────────────────────────────── */
+function EditModal({ bill, onSave, onCancel }) {
+  const [customerName, setCustomerName] = useState(bill.customerName)
+  const [products,     setProducts]     = useState([])
+  const [rows,         setRows]         = useState(
+    bill.items.map(i => ({ productId: i.productId, productName: i.productName, quantity: i.quantity }))
+  )
+  const [saving, setSaving] = useState(false)
+
+  useEffect(() => {
+    api.get('/products').then(({ data }) => setProducts(data)).catch(() => {})
+  }, [])
+
+  const setRow = (idx, field, val) => setRows(r => r.map((row, i) => i === idx ? { ...row, [field]: val } : row))
+  const addRow = () => setRows(r => [...r, { productId: '', productName: '', quantity: 1 }])
+  const removeRow = idx => setRows(r => r.filter((_, i) => i !== idx))
+
+  const handleSave = async () => {
+    if (rows.some(r => !r.productId || r.quantity < 1))
+      return toast.error('Fill all product rows correctly')
+    setSaving(true)
+    try {
+      const updated = await api.patch(`/bills/${bill._id}`, {
+        customerName,
+        items: rows.map(r => ({ productId: r.productId, quantity: Number(r.quantity) }))
+      })
+      toast.success('Bill updated!')
+      onSave(updated.data)
+    } catch (err) {
+      toast.error(err?.response?.data?.message || 'Failed to update bill')
+    } finally { setSaving(false) }
+  }
+
+  return (
+    <div className="modal-overlay">
+      <div className="modal-card" style={{ maxWidth: 560 }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 18 }}>
+          <h3 style={{ fontSize: 17, fontWeight: 800, color: 'var(--text)' }}>✏️ Edit Bill – {bill.billNumber}</h3>
+          <button onClick={onCancel} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)' }}><X size={18} /></button>
+        </div>
+
+        {/* Customer name */}
+        <div className="form-group">
+          <label className="form-label">Customer Name</label>
+          <input className="form-control" value={customerName} onChange={e => setCustomerName(e.target.value)} />
+        </div>
+
+        {/* Product rows */}
+        <label className="form-label" style={{ marginBottom: 8, display: 'block' }}>Products</label>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 14 }}>
+          {rows.map((row, idx) => (
+            <div key={idx} style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+              <select
+                className="form-control"
+                style={{ flex: 2 }}
+                value={row.productId}
+                onChange={e => {
+                  const p = products.find(p => p._id === e.target.value)
+                  setRow(idx, 'productId', e.target.value)
+                  if (p) setRow(idx, 'productName', p.name)
+                }}
+              >
+                <option value="">Select product…</option>
+                {products.map(p => <option key={p._id} value={p._id}>{p.name} – ₹{p.finalPrice}</option>)}
+              </select>
+              <input
+                type="number" min={1} className="form-control"
+                style={{ width: 70 }}
+                value={row.quantity}
+                onChange={e => setRow(idx, 'quantity', e.target.value)}
+              />
+              <button onClick={() => removeRow(idx)} style={{ background: 'rgba(229,62,62,0.1)', border: '1px solid rgba(229,62,62,0.3)', borderRadius: 8, padding: '7px 9px', cursor: 'pointer', color: '#e53e3e' }}>
+                <Minus size={13} />
+              </button>
+            </div>
+          ))}
+        </div>
+        <button className="btn btn-secondary btn-sm" style={{ marginBottom: 20 }} onClick={addRow}>
+          <Plus size={13} /> Add Product
+        </button>
+
+        <div style={{ display: 'flex', gap: 10 }}>
+          <button className="btn btn-secondary" style={{ flex: 1 }} onClick={onCancel} disabled={saving}><X size={14} /> Cancel</button>
+          <button className="btn btn-primary"   style={{ flex: 1 }} onClick={handleSave} disabled={saving}>
+            <Pencil size={14} /> {saving ? 'Saving…' : 'Save Changes'}
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 /* ─── Main Component ──────────────────────────────── */
 export default function SalesHistory() {
   const [bills,       setBills]       = useState([])
@@ -84,8 +176,9 @@ export default function SalesHistory() {
   const [viewMode,    setViewMode]    = useState('list')   // 'list' | 'daywise'
   const [expanded,    setExpanded]    = useState(null)
   const [expandedDay, setExpandedDay] = useState(null)
-  const [toDelete,    setToDelete]    = useState(null)     // bill object pending deletion
+  const [toDelete,    setToDelete]    = useState(null)
   const [deleting,    setDeleting]    = useState(false)
+  const [toEdit,      setToEdit]      = useState(null)     // bill being edited
 
   /* fetch flat list (with optional date filter) */
   const fetchBills = useCallback(async (d = date) => {
@@ -266,6 +359,21 @@ export default function SalesHistory() {
             <div style={{ color: 'var(--text-muted)', fontSize: 11 }}>{fmtDate(b.createdAt)} · {fmtTime(b.createdAt)}</div>
           </div>
 
+          {/* Edit button */}
+          <button
+            title="Edit this bill (exchange/price update)"
+            onClick={(e) => { e.stopPropagation(); setToEdit(b) }}
+            style={{
+              background: 'rgba(59,168,208,0.1)', border: '1px solid rgba(59,168,208,0.3)',
+              borderRadius: 8, padding: '6px 8px', cursor: 'pointer', color: 'var(--primary)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              transition: 'all 0.2s', flexShrink: 0
+            }}
+            onMouseEnter={e => { e.currentTarget.style.background = 'rgba(59,168,208,0.22)'; e.currentTarget.style.borderColor = 'var(--primary)' }}
+            onMouseLeave={e => { e.currentTarget.style.background = 'rgba(59,168,208,0.1)';  e.currentTarget.style.borderColor = 'rgba(59,168,208,0.3)' }}
+          >
+            <Pencil size={14} />
+          </button>
           {/* Delete button */}
           <button
             title="Delete this bill"
@@ -337,6 +445,17 @@ export default function SalesHistory() {
         }
       `}</style>
 
+      {/* Edit modal */}
+      {toEdit && (
+        <EditModal
+          bill={toEdit}
+          onSave={(updated) => {
+            setBills(prev => prev.map(b => b._id === updated._id ? updated : b))
+            setToEdit(null)
+          }}
+          onCancel={() => setToEdit(null)}
+        />
+      )}
       {/* Delete confirmation modal */}
       {toDelete && !deleting && (
         <DeleteModal
@@ -383,7 +502,7 @@ export default function SalesHistory() {
                   ? 'linear-gradient(135deg, var(--primary), var(--primary-light))'
                   : 'transparent',
                 color: viewMode === id ? '#fff' : 'var(--text-muted)',
-                boxShadow: viewMode === id ? '0 4px 12px rgba(108,62,184,0.4)' : 'none'
+                boxShadow: viewMode === id ? '0 4px 12px rgba(46,157,200,0.4)' : 'none'
               }}
             >
               {icon} {label}
