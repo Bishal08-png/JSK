@@ -40,9 +40,20 @@ router.post('/', protect, adminOnly, async (req, res) => {
       await product.save()
     }
 
+    // Generate sequential bill number
+    const lastSequentialBill = await Bill.findOne({ billNumber: /^LK-0/ }).sort({ billNumber: -1 })
+    let nextNum = 1
+    if (lastSequentialBill) {
+      const parts = lastSequentialBill.billNumber.split('-')
+      if (parts.length === 2) {
+        nextNum = parseInt(parts[1], 10) + 1
+      }
+    }
+    const billNumberStr = `LK-${String(nextNum).padStart(11, '0')}`
+
     const grandTotal = parseFloat((subtotal - totalDiscount).toFixed(2))
     const bill = await Bill.create({
-      billNumber:    `LK-${Date.now()}`,
+      billNumber:    billNumberStr,
       customerName:  customerName || 'Walk-in Customer',
       items:         billItems,
       subtotal:      parseFloat(subtotal.toFixed(2)),
