@@ -71,83 +71,6 @@ export default function Dashboard() {
             ))}
           </div>
 
-          {/* Customer Selling Details */}
-          <div className="card" style={{ marginBottom: 28 }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 18 }}>
-              <div>
-                <h3 style={{ fontSize: 16, fontWeight: 800, color: 'var(--text)' }}>Customer Selling Details</h3>
-                <p style={{ fontSize: 13, color: 'var(--text-muted)', marginTop: 3 }}>
-                  All-time spending per customer.
-                </p>
-              </div>
-              <span style={{
-                background: 'rgba(59,168,208,0.12)', color: 'var(--primary)',
-                border: '1px solid rgba(59,168,208,0.25)', borderRadius: 20,
-                padding: '4px 14px', fontSize: 12, fontWeight: 700
-              }}>
-                {customers.length} customer{customers.length !== 1 ? 's' : ''}
-              </span>
-            </div>
-
-            {customers.length === 0 ? (
-              <p style={{ color: 'var(--text-muted)', textAlign: 'center', padding: '24px 0', fontSize: 14 }}>
-                No customer data yet.
-              </p>
-            ) : (
-              <div className="customer-table-wrap table-wrap">
-                <table>
-                  <thead>
-                    <tr>
-                      <th>#</th>
-                      <th>Customer Name</th>
-                      <th>Total Bills</th>
-                      <th>Total Spent</th>
-                      <th>Products Bought</th>
-                      <th>Last Purchase</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {customers.map((c, idx) => (
-                      <tr key={c.name}>
-                        <td style={{ color: 'var(--text-muted)', fontWeight: 600 }}>{idx + 1}</td>
-                        <td>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                            <div style={{
-                              width: 32, height: 32, borderRadius: '50%',
-                              background: `linear-gradient(135deg, var(--primary), var(--primary-light))`,
-                              display: 'flex', alignItems: 'center', justifyContent: 'center',
-                              color: '#fff', fontWeight: 800, fontSize: 13, flexShrink: 0
-                            }}>
-                              {c.name.charAt(0).toUpperCase()}
-                            </div>
-                            <span style={{ fontWeight: 600, color: 'var(--text)' }}>{c.name}</span>
-                          </div>
-                        </td>
-                        <td>
-                          <span className="badge badge-purple">{c.totalBills} bill{c.totalBills !== 1 ? 's' : ''}</span>
-                        </td>
-                        <td style={{ fontWeight: 800, color: 'var(--primary-dark)', fontSize: 15 }}>
-                          {fmt(c.totalSpent)}
-                        </td>
-                        <td style={{ maxWidth: 220 }}>
-                          <span style={{
-                            display: 'block', overflow: 'hidden', textOverflow: 'ellipsis',
-                            whiteSpace: 'nowrap', color: 'var(--text-muted)', fontSize: 12
-                          }}>
-                            {[...new Set(c.items)].join(', ') || '—'}
-                          </span>
-                        </td>
-                        <td style={{ color: 'var(--text-muted)', fontSize: 12 }}>
-                          {fmtDate(c.lastSale)}<br/>
-                          <span style={{ fontSize: 11 }}>{fmtTime(c.lastSale)}</span>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </div>
 
           {/* Recent Bills */}
           {safeBills.length > 0 && (
@@ -160,7 +83,6 @@ export default function Dashboard() {
                   <thead>
                     <tr>
                       <th>Bill #</th>
-                      <th>Customer</th>
                       <th>Items</th>
                       <th>Grand Total</th>
                       <th>Date</th>
@@ -170,7 +92,6 @@ export default function Dashboard() {
                     {safeBills.slice(0, 8).map(b => (
                       <tr key={b._id}>
                         <td><span className="badge badge-purple">{b.billNumber}</span></td>
-                        <td style={{ fontWeight: 600 }}>{b.customerName}</td>
                         <td style={{ color: 'var(--text-muted)', fontSize: 12 }}>
                           {b.items.map(i => i.productName).join(', ')}
                         </td>
