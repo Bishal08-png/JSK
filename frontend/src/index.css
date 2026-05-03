@@ -225,10 +225,10 @@ tr:hover td { background: rgba(108,62,184,0.06); }
 .bill-header h2 { font-size: 24px; font-weight: 900; letter-spacing: 4px; color: var(--primary); }
 .bill-header p { font-size: 11px; color: #666; }
 .bill-items-table { width: 100%; font-size: 12px; border-collapse: collapse; margin: 12px 0; }
-.bill-items-table th { background: #f0ebff; padding: 6px; text-align: left; }
-.bill-items-table td { padding: 5px 6px; border-bottom: 1px solid #eee; }
+.bill-items-table th { background: #f0ebff; color: #111; padding: 6px; text-align: left; }
+.bill-items-table td { color: #111; padding: 5px 6px; border-bottom: 1px solid #eee; }
 .bill-totals { border-top: 2px dashed #ccc; padding-top: 10px; }
-.bill-totals .row { display: flex; justify-content: space-between; font-size: 12px; padding: 2px 0; }
+.bill-totals .row { color: #111; display: flex; justify-content: space-between; font-size: 12px; padding: 2px 0; }
 .bill-totals .grand { font-weight: 900; font-size: 15px; padding-top: 6px; border-top: 1px solid #ccc; }
 
 /* Product Cards */
