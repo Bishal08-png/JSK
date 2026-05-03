@@ -57,7 +57,9 @@ export default function Sidebar({ open, setOpen }) {
 
         <div className="sidebar-footer">
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12, padding: '8px 0' }}>
-            <div className="avatar">{user?.name?.[0]?.toUpperCase()}</div>
+            <div className="avatar">
+              <img src={krishnaImageUrl} alt="Radha Krishna" />
+            </div>
             <div>
               <div style={{ fontSize: 13, fontWeight: 600 }}>{user?.name}</div>
               <div style={{ fontSize: 11, color: 'var(--text-muted)', textTransform: 'capitalize' }}>{user?.role}</div>

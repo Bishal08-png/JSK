@@ -4,6 +4,8 @@ import { useAuth } from '../context/useAuth'
 import Sidebar from './Sidebar'
 import { Menu } from 'lucide-react'
 
+const krishnaImageUrl = 'https://images.pexels.com/photos/36887683/pexels-photo-36887683.jpeg'
+
 const pageTitles = {
   '/admin/dashboard': 'Dashboard',
   '/admin/inventory': 'Inventory Management',
@@ -30,7 +32,9 @@ export default function Layout() {
             <h1 className="topbar-title">{title}</h1>
           </div>
           <div className="topbar-user">
-            <div className="avatar">{user?.name?.[0]?.toUpperCase()}</div>
+            <div className="avatar">
+              <img src={krishnaImageUrl} alt="Radha Krishna" />
+            </div>
             <div style={{ display: 'flex', flexDirection: 'column' }}>
               <span style={{ fontSize: 13, fontWeight: 600 }}>{user?.name}</span>
               <span style={{ fontSize: 10, color: 'var(--text-muted)', textTransform: 'capitalize' }}>{user?.role}</span>
