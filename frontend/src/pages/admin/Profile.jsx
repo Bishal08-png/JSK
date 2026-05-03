@@ -1,0 +1,171 @@
+import { useState } from 'react'
+import toast from 'react-hot-toast'
+import { Eye, EyeOff, IndianRupee, Lock, ShieldCheck, UserRound } from 'lucide-react'
+import api from '../../api/axios'
+import { useAuth } from '../../context/useAuth'
+import { business } from '../../config/business'
+
+export default function Profile() {
+  const { user } = useAuth()
+  const displayName = user?.role === 'admin' ? `${business.initials} Admin` : user?.name
+  const [passwords, setPasswords] = useState({ currentPassword: '', newPassword: '', confirmPassword: '' })
+  const [saving, setSaving] = useState(false)
+  const [revenueVisible, setRevenueVisible] = useState(false)
+  const [revenueLoading, setRevenueLoading] = useState(false)
+  const [stats, setStats] = useState(null)
+
+  const fmt = (n) => `Rs. ${Number(n || 0).toFixed(2)}`
+
+  const revealRevenue = async () => {
+    if (revenueVisible) {
+      setRevenueVisible(false)
+      return
+    }
+
+    if (!stats) {
+      setRevenueLoading(true)
+      try {
+        const { data } = await api.get('/bills/stats')
+        setStats(data)
+        setRevenueVisible(true)
+      } catch (err) {
+        toast.error(err?.response?.data?.message || 'Failed to load revenue')
+      } finally {
+        setRevenueLoading(false)
+      }
+      return
+    }
+    setRevenueVisible(true)
+  }
+
+  const handlePasswordChange = async (e) => {
+    e.preventDefault()
+    if (passwords.newPassword !== passwords.confirmPassword) {
+      toast.error('New password and confirmation do not match')
+      return
+    }
+
+    setSaving(true)
+    try {
+      await api.put('/auth/admin/password', {
+        currentPassword: passwords.currentPassword,
+        newPassword: passwords.newPassword,
+      })
+      setPasswords({ currentPassword: '', newPassword: '', confirmPassword: '' })
+      toast.success('Admin password updated')
+    } catch (err) {
+      toast.error(err?.response?.data?.message || 'Failed to update password')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  return (
+    <div>
+      <div style={{ marginBottom: 24 }}>
+        <h2 style={{ fontSize: 22, fontWeight: 800 }}>Admin Profile</h2>
+        <p style={{ color: 'var(--text-muted)', fontSize: 13 }}>
+          Manage access for {business.name}.
+        </p>
+      </div>
+
+      <div className="grid grid-2 profile-grid">
+        <div className="card">
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20 }}>
+            <div className="profile-icon"><UserRound size={20} /></div>
+            <div>
+              <h3 style={{ fontSize: 16, fontWeight: 800 }}>Account</h3>
+              <p style={{ color: 'var(--text-muted)', fontSize: 12 }}>Signed-in admin details</p>
+            </div>
+          </div>
+
+          <div className="profile-row">
+            <span>Name</span>
+            <strong>{displayName || 'Admin'}</strong>
+          </div>
+          <div className="profile-row">
+            <span>Email</span>
+            <strong>{user?.email || 'Not available'}</strong>
+          </div>
+          <div className="profile-row">
+            <span>Role</span>
+            <strong style={{ textTransform: 'capitalize' }}>{user?.role || 'admin'}</strong>
+          </div>
+        </div>
+
+        <div className="card">
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20 }}>
+            <div className="profile-icon"><IndianRupee size={20} /></div>
+            <div>
+              <h3 style={{ fontSize: 16, fontWeight: 800 }}>Revenue</h3>
+              <p style={{ color: 'var(--text-muted)', fontSize: 12 }}>Visible only after admin opens it here</p>
+            </div>
+          </div>
+
+          <div className="revenue-box">
+            <div>
+              <div className="stat-label">Total Revenue</div>
+              <div className="stat-value" style={{ color: 'var(--accent)' }}>
+                {revenueVisible ? fmt(stats?.totalRevenue) : 'Hidden'}
+              </div>
+            </div>
+            <button className="btn btn-secondary" onClick={revealRevenue} disabled={revenueLoading}>
+              {revenueVisible ? <EyeOff size={16} /> : <Eye size={16} />}
+              {revenueLoading ? 'Loading...' : revenueVisible ? 'Hide' : 'View'}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div className="card" style={{ marginTop: 20, maxWidth: 620 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20 }}>
+          <div className="profile-icon"><ShieldCheck size={20} /></div>
+          <div>
+            <h3 style={{ fontSize: 16, fontWeight: 800 }}>Change Password</h3>
+            <p style={{ color: 'var(--text-muted)', fontSize: 12 }}>
+              The current password is required before setting a new one.
+            </p>
+          </div>
+        </div>
+
+        <form onSubmit={handlePasswordChange}>
+          <div className="form-group">
+            <label className="form-label">Current Password</label>
+            <input
+              className="form-control"
+              type="password"
+              value={passwords.currentPassword}
+              onChange={e => setPasswords({ ...passwords, currentPassword: e.target.value })}
+              required
+            />
+          </div>
+          <div className="form-group">
+            <label className="form-label">New Password</label>
+            <input
+              className="form-control"
+              type="password"
+              minLength={6}
+              value={passwords.newPassword}
+              onChange={e => setPasswords({ ...passwords, newPassword: e.target.value })}
+              required
+            />
+          </div>
+          <div className="form-group">
+            <label className="form-label">Confirm New Password</label>
+            <input
+              className="form-control"
+              type="password"
+              minLength={6}
+              value={passwords.confirmPassword}
+              onChange={e => setPasswords({ ...passwords, confirmPassword: e.target.value })}
+              required
+            />
+          </div>
+          <button className="btn btn-primary" type="submit" disabled={saving}>
+            <Lock size={16} /> {saving ? 'Updating...' : 'Update Password'}
+          </button>
+        </form>
+      </div>
+    </div>
+  )
+}

@@ -7,6 +7,7 @@ import {
 } from 'lucide-react'
 import html2canvas from 'html2canvas'
 import jsPDF from 'jspdf'
+import { business } from '../../config/business'
 
 /* ─── helpers ─────────────────────────────────────── */
 const fmt      = (n)  => `₹${Number(n).toFixed(2)}`
@@ -117,7 +118,6 @@ export default function SalesHistory() {
   const clearFilter = () => { setDate(''); fetchBills('') }
 
   /* derived metrics (from current filtered list) */
-  const totalRevenue  = bills.reduce((s, b) => s + b.grandTotal,    0)
   const totalDiscount = bills.reduce((s, b) => s + b.totalDiscount, 0)
 
   /* delete flow */
@@ -144,6 +144,7 @@ export default function SalesHistory() {
     
     setDownloading(true)
     const reportDateStr = fmtDay(date)
+    const reportRevenue = bills.reduce((s, b) => s + b.grandTotal, 0)
     
     // Create hidden report container
     const root = document.createElement('div')
@@ -159,7 +160,8 @@ export default function SalesHistory() {
     root.innerHTML = `
       <div style="border-bottom: 2px solid #4c1d95; padding-bottom: 10px; margin-bottom: 14px; display: flex; justify-content: space-between; align-items: flex-end;">
         <div>
-          <h1 style="margin: 0; color: #4c1d95; font-size: 21px; font-weight: 800;">JSK STATIONERY SHOP</h1>
+          <h1 style="margin: 0; color: #4c1d95; font-size: 21px; font-weight: 800;">${business.name.toUpperCase()}</h1>
+          <p style="margin: 3px 0 0; color: #6b7280; font-size: 10px;">${business.address}</p>
           <p style="margin: 3px 0 0; color: #6b7280; font-size: 12px; font-weight: 600;">Daily Sales Report</p>
         </div>
         <div style="text-align: right;">
@@ -171,7 +173,7 @@ export default function SalesHistory() {
       <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 16px;">
         <div style="background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 7px; padding: 9px; text-align: center;">
           <p style="margin: 0 0 3px; font-size: 9px; color: #6b7280; text-transform: uppercase; letter-spacing: 0.05em;">Day Total</p>
-          <p style="margin: 0; font-size: 15px; font-weight: 800; color: #059669;">${fmt(totalRevenue)}</p>
+          <p style="margin: 0; font-size: 15px; font-weight: 800; color: #059669;">${fmt(reportRevenue)}</p>
         </div>
         <div style="background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 7px; padding: 9px; text-align: center;">
           <p style="margin: 0 0 3px; font-size: 9px; color: #6b7280; text-transform: uppercase; letter-spacing: 0.05em;">Total Bills</p>
@@ -207,7 +209,7 @@ export default function SalesHistory() {
       </table>
 
       <div style="margin-top: 20px; border-top: 1px dashed #e5e7eb; padding-top: 10px; text-align: center; color: #9ca3af; font-size: 9px;">
-        This is an electronically generated report from JSK Stationery Management System.
+        This is an electronically generated report from ${business.name}.
       </div>
     `
     
@@ -221,7 +223,7 @@ export default function SalesHistory() {
       const pdfHeight = (canvas.height * pdfWidth) / canvas.width
       
       pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight)
-      pdf.save(`JSK_Report_${date}.pdf`)
+      pdf.save(`LK_Report_${date}.pdf`)
       toast.success('Report downloaded successfully!')
     } catch (err) {
       console.error(err)
@@ -449,13 +451,7 @@ export default function SalesHistory() {
         <>
           {/* Summary cards */}
           {(bills.length > 0 || date) && (
-            <div className="grid grid-3" style={{ marginBottom: 20 }}>
-              <div className="stat-card" style={{ '--glow-color': 'rgba(16,185,129,0.15)' }}>
-                <div className="stat-label">
-                  {date ? `Revenue on ${fmtDate(date + 'T00:00:00')}` : 'Total Revenue'}
-                </div>
-                <div className="stat-value" style={{ color: 'var(--accent)' }}>{fmt(totalRevenue)}</div>
-              </div>
+            <div className="grid grid-2" style={{ marginBottom: 20 }}>
               <div className="stat-card" style={{ '--glow-color': 'rgba(139,92,246,0.15)' }}>
                 <div className="stat-label">
                   {date ? 'Bills on This Day' : 'Total Bills'}
@@ -498,15 +494,10 @@ export default function SalesHistory() {
         <>
           {/* Overall summary */}
           {daywise.length > 0 && (() => {
-            const allRevenue  = daywise.reduce((s, g) => s + g.totalRevenue,  0)
             const allDiscount = daywise.reduce((s, g) => s + g.totalDiscount, 0)
             const allBills    = daywise.reduce((s, g) => s + g.totalBills,    0)
             return (
-              <div className="grid grid-3" style={{ marginBottom: 20 }}>
-                <div className="stat-card" style={{ '--glow-color': 'rgba(16,185,129,0.15)' }}>
-                  <div className="stat-label">Total Revenue (All Time)</div>
-                  <div className="stat-value" style={{ color: 'var(--accent)' }}>{fmt(allRevenue)}</div>
-                </div>
+              <div className="grid grid-2" style={{ marginBottom: 20 }}>
                 <div className="stat-card" style={{ '--glow-color': 'rgba(139,92,246,0.15)' }}>
                   <div className="stat-label">Total Bills (All Time)</div>
                   <div className="stat-value" style={{ color: 'var(--primary-light)' }}>{allBills}</div>
@@ -562,9 +553,6 @@ export default function SalesHistory() {
                       {/* Right – revenue + discount + chevron */}
                       <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
                         <div style={{ textAlign: 'right' }}>
-                          <div style={{ color: 'var(--accent)', fontWeight: 800, fontSize: 16 }}>
-                            {fmt(group.totalRevenue)}
-                          </div>
                           <div style={{ color: '#34d399', fontSize: 12 }}>
                             -{fmt(group.totalDiscount)} saved
                           </div>

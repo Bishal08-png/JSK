@@ -42,7 +42,7 @@ router.post('/', protect, adminOnly, async (req, res) => {
 
     const grandTotal = parseFloat((subtotal - totalDiscount).toFixed(2))
     const bill = await Bill.create({
-      billNumber:    `JSK-${Date.now()}`,
+      billNumber:    `LK-${Date.now()}`,
       customerName:  customerName || 'Walk-in Customer',
       items:         billItems,
       subtotal:      parseFloat(subtotal.toFixed(2)),

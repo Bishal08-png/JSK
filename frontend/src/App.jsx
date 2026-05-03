@@ -10,6 +10,7 @@ import Dashboard from './pages/admin/Dashboard'
 import Inventory from './pages/admin/Inventory'
 import Billing from './pages/admin/Billing'
 import SalesHistory from './pages/admin/SalesHistory'
+import Profile from './pages/admin/Profile'
 import ProductCatalog from './pages/customer/ProductCatalog'
 
 const PrivateRoute = ({ children, role }) => {
@@ -37,6 +38,7 @@ const AppRoutes = () => {
         <Route path="admin/inventory" element={<PrivateRoute role="admin"><Inventory /></PrivateRoute>} />
         <Route path="admin/billing" element={<PrivateRoute role="admin"><Billing /></PrivateRoute>} />
         <Route path="admin/history" element={<PrivateRoute role="admin"><SalesHistory /></PrivateRoute>} />
+        <Route path="admin/profile" element={<PrivateRoute role="admin"><Profile /></PrivateRoute>} />
         <Route path="products" element={<PrivateRoute><ProductCatalog /></PrivateRoute>} />
       </Route>
       <Route path="*" element={<Navigate to={user ? '/welcome' : '/login'} replace />} />

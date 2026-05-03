@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/useAuth'
 import api from '../../api/axios'
 import toast from 'react-hot-toast'
+import { business } from '../../config/business'
 
 export default function Signup() {
   const [form, setForm] = useState({ name: '', email: '', password: '', confirm: '' })
@@ -37,12 +38,12 @@ export default function Signup() {
     <div className="auth-page">
       <div className="auth-card">
         <div className="auth-logo">
-          <div className="big-logo">J</div>
-          <h1>JSK</h1>
-          <p>Stationery Shop</p>
+          <div className="big-logo">{business.initials}</div>
+          <h1>{business.initials}</h1>
+          <p>{business.name}</p>
         </div>
         <h2 className="auth-title">Create Account</h2>
-        <p className="auth-sub">Join JSK to browse our stationery collection.</p>
+        <p className="auth-sub">Join {business.name} to browse our stationery collection.</p>
         {error && <div className="alert alert-error">{error}</div>}
         <form onSubmit={handleSubmit}>
           <div className="form-group">

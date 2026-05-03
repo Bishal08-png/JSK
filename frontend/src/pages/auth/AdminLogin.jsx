@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/useAuth'
 import api from '../../api/axios'
 import toast from 'react-hot-toast'
+import { business } from '../../config/business'
 
 export default function AdminLogin() {
   const [form, setForm] = useState({ email: '', password: '' })
@@ -35,20 +36,20 @@ export default function AdminLogin() {
     <div className="auth-page">
       <div className="auth-card">
         <div className="auth-logo">
-          <div className="big-logo" style={{ background: 'linear-gradient(135deg, #4c1d95, #f59e0b)' }}>J</div>
-          <h1>JSK</h1>
+          <div className="big-logo" style={{ background: 'linear-gradient(135deg, #4c1d95, #f59e0b)' }}>{business.initials}</div>
+          <h1>{business.initials}</h1>
           <p>Admin Portal</p>
         </div>
         <h2 className="auth-title">Admin Login</h2>
         <p className="auth-sub">Restricted access. Authorized personnel only.</p>
         <div style={{ background:'rgba(245,158,11,0.08)', border:'1px solid rgba(245,158,11,0.25)', borderRadius:10, padding:'10px 14px', marginBottom:16, fontSize:12, color:'#fbbf24' }}>
-          🔒 Default: admin@jsk.com / admin123
+          Change the default password from Profile after first login.
         </div>
         {error && <div className="alert alert-error">{error}</div>}
         <form onSubmit={handleSubmit}>
           <div className="form-group">
             <label className="form-label">Admin Email</label>
-            <input className="form-control" type="email" placeholder="admin@jsk.com"
+            <input className="form-control" type="email" placeholder="admin@lokonathenterprise.com"
               value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} required />
           </div>
           <div className="form-group">
@@ -57,12 +58,12 @@ export default function AdminLogin() {
               value={form.password} onChange={e => setForm({ ...form, password: e.target.value })} required />
           </div>
           <button className="btn btn-primary btn-full" type="submit" disabled={loading}>
-            {loading ? 'Authenticating...' : '🔐 Admin Sign In'}
+            {loading ? 'Authenticating...' : 'Admin Sign In'}
           </button>
         </form>
         <div style={{ marginTop: 20, textAlign: 'center' }}>
           <Link to="/login" style={{ fontSize: 12, color: 'var(--text-muted)' }}>
-            ← Customer Login
+            Customer Login
           </Link>
         </div>
       </div>

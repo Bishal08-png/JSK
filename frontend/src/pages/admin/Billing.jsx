@@ -4,6 +4,7 @@ import toast from 'react-hot-toast'
 import { Plus, Minus, Trash2, Download, Search } from 'lucide-react'
 import jsPDF from 'jspdf'
 import html2canvas from 'html2canvas'
+import { business } from '../../config/business'
 
 export default function Billing() {
   const [products, setProducts] = useState([])
@@ -71,7 +72,7 @@ export default function Billing() {
     const w = pdf.internal.pageSize.getWidth()
     const h = (canvas.height * w) / canvas.width
     pdf.addImage(img, 'PNG', 0, 0, w, h)
-    pdf.save(`${bill?.billNumber || 'JSK-Bill'}.pdf`)
+    pdf.save(`${bill?.billNumber || 'LK-Bill'}.pdf`)
     toast.success('Bill downloaded as PDF!')
   }
 
@@ -93,8 +94,9 @@ export default function Billing() {
           </div>
           <div ref={billRef} className="bill-preview" style={{ maxWidth: 480 }}>
             <div className="bill-header">
-              <h2>JSK</h2>
-              <p style={{ fontSize: 13, fontWeight: 700 }}>Stationery Shop</p>
+              <h2>{business.initials}</h2>
+              <p style={{ fontSize: 13, fontWeight: 700 }}>{business.name}</p>
+              <p>{business.address}</p>
               <p>Your trusted stationery destination</p>
               <p style={{ marginTop: 8 }}>Bill No: <strong>{bill.billNumber}</strong></p>
               <p>Date: {fmtDate(bill.createdAt)}</p>
@@ -119,7 +121,7 @@ export default function Billing() {
               <div className="row grand"><span>GRAND TOTAL</span><span>{fmtCur(bill.grandTotal)}</span></div>
             </div>
             <p style={{ textAlign: 'center', marginTop: 16, fontSize: 11, color: '#666' }}>
-              Thank you for shopping at JSK! 🙏<br />Visit Again!
+              Thank you for shopping at {business.name}!<br />Visit Again!
             </p>
           </div>
         </div>

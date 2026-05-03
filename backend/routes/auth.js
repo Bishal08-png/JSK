@@ -1,6 +1,7 @@
 const express = require('express')
 const jwt     = require('jsonwebtoken')
 const User    = require('../models/User')
+const { protect, adminOnly } = require('../middleware/auth')
 const router  = express.Router()
 
 const JWT_SECRET = process.env.JWT_SECRET || (process.env.NODE_ENV === 'production' ? undefined : 'jsk_secret_2024')
@@ -63,6 +64,33 @@ router.post('/login', async (req, res) => {
     if (!match) return res.status(401).json({ message: 'Invalid email or password' })
 
     res.json(toAuthResponse(user))
+  } catch (err) {
+    res.status(500).json({ message: err.message })
+  }
+})
+
+// PUT /api/auth/admin/password
+router.put('/admin/password', protect, adminOnly, async (req, res) => {
+  try {
+    const { currentPassword, newPassword } = req.body
+    if (!currentPassword || !newPassword) {
+      return res.status(400).json({ message: 'Current password and new password are required' })
+    }
+
+    if (newPassword.length < 6) {
+      return res.status(400).json({ message: 'New password must be at least 6 characters' })
+    }
+
+    const user = await User.findById(req.user._id).select('+password')
+    if (!user) return res.status(404).json({ message: 'Admin account not found' })
+
+    const match = await user.comparePassword(currentPassword)
+    if (!match) return res.status(401).json({ message: 'Current password is incorrect' })
+
+    user.password = newPassword
+    await user.save()
+
+    res.json({ message: 'Password updated successfully' })
   } catch (err) {
     res.status(500).json({ message: err.message })
   }

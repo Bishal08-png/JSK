@@ -3,14 +3,16 @@ import { useAuth } from '../context/useAuth'
 import toast from 'react-hot-toast'
 import {
   LayoutDashboard, Package, Receipt, History,
-  ShoppingBag, LogOut
+  ShoppingBag, LogOut, UserRound
 } from 'lucide-react'
+import { business } from '../config/business'
 
 const krishnaImageUrl = 'https://images.pexels.com/photos/36887683/pexels-photo-36887683.jpeg'
 
 export default function Sidebar({ open, setOpen }) {
   const { user, logout } = useAuth()
   const navigate = useNavigate()
+  const displayName = user?.role === 'admin' ? `${business.initials} Admin` : user?.name
 
   const handleLogout = () => {
     logout()
@@ -23,6 +25,7 @@ export default function Sidebar({ open, setOpen }) {
     { to: '/admin/inventory', icon: <Package />, label: 'Inventory' },
     { to: '/admin/billing', icon: <Receipt />, label: 'Billing / POS' },
     { to: '/admin/history', icon: <History />, label: 'Sales History' },
+    { to: '/admin/profile', icon: <UserRound />, label: 'Profile' },
   ]
   const customerLinks = [
     { to: '/products', icon: <ShoppingBag />, label: 'Product Catalog' },
@@ -38,8 +41,8 @@ export default function Sidebar({ open, setOpen }) {
             <img src={krishnaImageUrl} alt="Radha Krishna" />
           </div>
           <div>
-            <div className="logo-text">JSK</div>
-            <div className="logo-sub">STATIONERY SHOP</div>
+            <div className="logo-text">{business.initials}</div>
+            <div className="logo-sub">{business.name}</div>
           </div>
         </div>
 
@@ -61,7 +64,7 @@ export default function Sidebar({ open, setOpen }) {
               <img src={krishnaImageUrl} alt="Radha Krishna" />
             </div>
             <div>
-              <div style={{ fontSize: 13, fontWeight: 600 }}>{user?.name}</div>
+              <div style={{ fontSize: 13, fontWeight: 600 }}>{displayName}</div>
               <div style={{ fontSize: 11, color: 'var(--text-muted)', textTransform: 'capitalize' }}>{user?.role}</div>
             </div>
           </div>

@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/useAuth'
 import api from '../../api/axios'
 import toast from 'react-hot-toast'
+import { business } from '../../config/business'
 
 export default function Login() {
   const [form, setForm] = useState({ email: '', password: '' })
@@ -31,9 +32,9 @@ export default function Login() {
     <div className="auth-page">
       <div className="auth-card">
         <div className="auth-logo">
-          <div className="big-logo">J</div>
-          <h1>JSK</h1>
-          <p>Stationery Shop</p>
+          <div className="big-logo">{business.initials}</div>
+          <h1>{business.initials}</h1>
+          <p>{business.name}</p>
         </div>
         <h2 className="auth-title">Customer Login</h2>
         <p className="auth-sub">Welcome back! Sign in to your account.</p>
@@ -60,7 +61,7 @@ export default function Login() {
         </p>
         <div style={{ marginTop: 20, textAlign: 'center' }}>
           <Link to="/admin/login" style={{ fontSize: 12, color: 'var(--text-muted)' }}>
-            🔐 Admin Login →
+            Admin Login
           </Link>
         </div>
       </div>

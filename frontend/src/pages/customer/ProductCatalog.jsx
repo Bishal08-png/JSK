@@ -5,6 +5,7 @@ import {
   Search, Package, ShoppingCart, Plus, Minus,
   Trash2, X, Tag, ChevronRight
 } from 'lucide-react'
+import { business } from '../../config/business'
 
 /* ─── helpers ───────────────────────────────────── */
 const fmt     = (n)  => `₹${Number(n).toFixed(2)}`
@@ -291,7 +292,7 @@ export default function ProductCatalog() {
         <div>
           <h2 style={{ fontSize: 24, fontWeight: 800 }}>Product Catalog</h2>
           <p style={{ color: 'var(--text-muted)', fontSize: 14 }}>
-            Browse all available JSK stationery products — {products.length} items in stock.
+            Browse all available {business.name} stationery products - {products.length} items in stock.
           </p>
         </div>
 
@@ -336,7 +337,7 @@ export default function ProductCatalog() {
       }}>
         <div style={{ fontSize: 38 }}>🛍️</div>
         <div style={{ flex: 1 }}>
-          <div style={{ fontSize: 17, fontWeight: 800 }}>Welcome to JSK Stationery</div>
+          <div style={{ fontSize: 17, fontWeight: 800 }}>Welcome to {business.name}</div>
           <div style={{ color: 'var(--text-muted)', fontSize: 13, marginTop: 4 }}>
             Add items to your cart to calculate the total price before visiting the shop counter.
           </div>
