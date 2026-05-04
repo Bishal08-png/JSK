@@ -59,7 +59,7 @@ export default function Dashboard() {
       ) : (
         <>
           {/* Stat cards – 5 across */}
-          <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fill,minmax(160px,1fr))', marginBottom: 32, gap: 16 }}>
+          <div className="dashboard-grid" style={{ marginBottom: 32 }}>
             {statCards.map((s) => (
               <div key={s.label} className="stat-card" style={{ '--glow-color': s.glow }}>
                 <div className="stat-label">{s.label}</div>

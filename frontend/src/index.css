@@ -170,6 +170,7 @@ body {
 
 /* ─── Grid ───────────────────────────── */
 .grid { display: grid; gap: 16px; }
+.dashboard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; }
 .grid-2 { grid-template-columns: repeat(2, 1fr); }
 .grid-3 { grid-template-columns: repeat(3, 1fr); }
 .grid-4 { grid-template-columns: repeat(4, 1fr); }
@@ -373,7 +374,7 @@ tr:hover td { background: rgba(46,157,200,0.06); }
 @media (max-width: 600px) {
   .page-content { padding: 16px; }
   .auth-card { padding: 28px 20px; }
-  .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }
+  .grid-2, .grid-3, .grid-4, .dashboard-grid { grid-template-columns: 1fr; }
   .topbar { padding: 0 16px; gap: 8px; }
   .card { padding: 16px; }
   .stat-card { padding: 16px; }
@@ -383,5 +384,6 @@ tr:hover td { background: rgba(46,157,200,0.06); }
   .profile-grid { grid-template-columns: 1fr; }
   .product-grid { grid-template-columns: 1fr; }
 }
+
 
 
