@@ -122,8 +122,8 @@ export default function Inventory() {
       )}
 
       <div className="card">
-        <div style={{ marginBottom:16, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <div className="search-bar" style={{ width: '300px' }}>
+        <div style={{ marginBottom:16, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
+          <div className="search-bar" style={{ flex: '1 1 200px', maxWidth: '300px' }}>
             <Search size={16} />
             <input className="form-control" placeholder="Search products..." value={search} onChange={e => setSearch(e.target.value)} style={{ paddingLeft:38 }} />
           </div>
@@ -172,3 +172,4 @@ export default function Inventory() {
     </div>
   )
 }
+

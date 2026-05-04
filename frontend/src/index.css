@@ -107,7 +107,7 @@ body {
   padding: 0 24px; position: sticky; top: 0; z-index: 50;
   box-shadow: 0 2px 16px rgba(26,111,150,0.2);
 }
-.topbar-title { font-size: 18px; font-weight: 700; color: #fff; }
+.topbar-title { font-size: 18px; font-weight: 700; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 250px; }
 .topbar-user { display: flex; align-items: center; gap: 10px; color: #fff; }
 .avatar {
   width: 36px; height: 36px; border-radius: 50%;
@@ -330,7 +330,7 @@ tr:hover td { background: rgba(46,157,200,0.06); }
 /* ─── Search ─────────────────────────── */
 .search-bar { position: relative; }
 .search-bar svg { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text-muted); width: 16px; height: 16px; }
-.search-bar input { padding-left: 38px; }
+.search-bar input { padding-left: 38px; width: 100%; }
 
 /* ─── Mobile sidebar overlay ──────────── */
 .sidebar-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 90; }
@@ -374,8 +374,10 @@ tr:hover td { background: rgba(46,157,200,0.06); }
   .page-content { padding: 16px; }
   .auth-card { padding: 28px 20px; }
   .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }
-  .topbar { padding: 0 16px; }
+  .topbar { padding: 0 16px; gap: 8px; }
+  .topbar-title { font-size: 16px; max-width: 140px; }
   .app-footer { flex-direction: column; align-items: flex-start; padding: 14px 16px; }
   .profile-grid { grid-template-columns: 1fr; }
   .product-grid { grid-template-columns: 1fr; }
 }
+
