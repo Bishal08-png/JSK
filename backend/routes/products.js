@@ -14,7 +14,7 @@ router.get('/', protect, async (req, res) => {
 // POST /api/products
 router.post('/', protect, adminOnly, async (req, res) => {
   try {
-    const { name, quantity, mrp, discountPercent } = req.body
+    const { name, quantity, mrp, discountPercent, buyingPrice } = req.body
     if (!name || quantity === undefined || !mrp || discountPercent === undefined)
       return res.status(400).json({ message: 'All fields are required' })
 
@@ -28,6 +28,7 @@ router.post('/', protect, adminOnly, async (req, res) => {
       name,
       quantity: Number(quantity),
       mrp: mrpNum,
+      buyingPrice: Number(buyingPrice || 0),
       discountPercent: discNum,
       finalPrice: calculatedFinalPrice
     })
@@ -38,7 +39,7 @@ router.post('/', protect, adminOnly, async (req, res) => {
 // PUT /api/products/:id
 router.put('/:id', protect, adminOnly, async (req, res) => {
   try {
-    const { name, quantity, mrp, discountPercent } = req.body
+    const { name, quantity, mrp, discountPercent, buyingPrice } = req.body
     const product = await Product.findById(req.params.id)
     if (!product) return res.status(404).json({ message: 'Product not found' })
 
@@ -46,6 +47,7 @@ router.put('/:id', protect, adminOnly, async (req, res) => {
     if (quantity         !== undefined) product.quantity         = Number(quantity)
     if (mrp              !== undefined) product.mrp              = Number(mrp)
     if (discountPercent  !== undefined) product.discountPercent  = Number(discountPercent)
+    if (buyingPrice      !== undefined) product.buyingPrice      = Number(buyingPrice)
 
     // Recalculate finalPrice server-side
     product.finalPrice = parseFloat((product.mrp - (product.mrp * product.discountPercent) / 100).toFixed(2))
@@ -67,3 +69,4 @@ router.delete('/:id', protect, adminOnly, async (req, res) => {
 })
 
 module.exports = router
+
