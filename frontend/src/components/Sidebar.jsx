@@ -12,7 +12,7 @@ const krishnaImageUrl = 'https://images.pexels.com/photos/36887683/pexels-photo-
 export default function Sidebar({ open, setOpen }) {
   const { user, logout } = useAuth()
   const navigate = useNavigate()
-  const displayName = user?.role === 'admin' ? `${business.initials} Admin` : user?.name
+  const displayName = user?.name || `${business.initials} Admin`
 
   const handleLogout = () => {
     logout()

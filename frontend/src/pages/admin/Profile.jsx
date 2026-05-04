@@ -6,8 +6,8 @@ import { useAuth } from '../../context/useAuth'
 import { business } from '../../config/business'
 
 export default function Profile() {
-  const { user, setUser } = useAuth()
-  const displayName = user?.role === 'admin' ? `${business.initials} Admin` : user?.name
+  const { user, login } = useAuth()
+  const displayName = user?.name || `${business.initials} Admin`
   const [passwords, setPasswords] = useState({ currentPassword: '', newPassword: '', confirmPassword: '' })
   const [profileForm, setProfileForm] = useState({ name: user?.name || '', email: user?.email || '' })
   const [saving, setSaving] = useState(false)
@@ -67,7 +67,7 @@ export default function Profile() {
     setSavingProfile(true)
     try {
       const { data } = await api.put('/auth/admin/profile', profileForm)
-      setUser(data) // update auth context
+      login(data) // update auth context & local storage
       toast.success('Profile updated successfully')
     } catch (err) {
       toast.error(err?.response?.data?.message || 'Failed to update profile')

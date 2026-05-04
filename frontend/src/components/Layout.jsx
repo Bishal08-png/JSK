@@ -21,7 +21,7 @@ export default function Layout() {
   const { user } = useAuth()
   const location = useLocation()
   const title = pageTitles[location.pathname] || business.initials
-  const displayName = user?.role === 'admin' ? `${business.initials} Admin` : user?.name
+  const displayName = user?.name || `${business.initials} Admin`
 
   return (
     <div className="app-layout">
