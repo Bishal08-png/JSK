@@ -53,7 +53,7 @@ export default function AdminLogin() {
         <form onSubmit={handleSubmit}>
           <div className="form-group">
             <label className="form-label">Admin Email</label>
-            <input className="form-control" type="email" placeholder="admin@lokonathenterprise.com"
+            <input className="form-control" type="email" placeholder="admin@lokenathenterprise.com"
               value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} required />
           </div>
           <div className="form-group">

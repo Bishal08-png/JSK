@@ -96,4 +96,32 @@ router.put('/admin/password', protect, adminOnly, async (req, res) => {
   }
 })
 
+// PUT /api/auth/admin/profile
+router.put('/admin/profile', protect, adminOnly, async (req, res) => {
+  try {
+    const { name, email } = req.body
+    if (!name?.trim() || !email?.trim()) {
+      return res.status(400).json({ message: 'Name and email are required' })
+    }
+
+    const normalizedEmail = email.toLowerCase().trim()
+    const user = await User.findById(req.user._id)
+    if (!user) return res.status(404).json({ message: 'Admin account not found' })
+
+    // Check if email is already used by another user
+    if (normalizedEmail !== user.email) {
+      const exists = await User.findOne({ email: normalizedEmail })
+      if (exists) return res.status(400).json({ message: 'Email already in use' })
+    }
+
+    user.name = name.trim()
+    user.email = normalizedEmail
+    await user.save()
+
+    res.json(toAuthResponse(user))
+  } catch (err) {
+    res.status(500).json({ message: err.message })
+  }
+})
+
 module.exports = router

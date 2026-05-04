@@ -4,6 +4,7 @@ const productSchema = new mongoose.Schema({
   name: { type: String, required: true, trim: true },
   quantity: { type: Number, required: true, min: 0 },
   mrp: { type: Number, required: true, min: 0 },
+  buyingPrice: { type: Number, default: 0, min: 0 },
   discountPercent: { type: Number, required: true, min: 0, max: 100 },
   finalPrice: { type: Number, required: true },
   dateAdded: { type: Date, default: Date.now },

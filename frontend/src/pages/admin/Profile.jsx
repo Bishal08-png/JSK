@@ -6,10 +6,12 @@ import { useAuth } from '../../context/useAuth'
 import { business } from '../../config/business'
 
 export default function Profile() {
-  const { user } = useAuth()
+  const { user, setUser } = useAuth()
   const displayName = user?.role === 'admin' ? `${business.initials} Admin` : user?.name
   const [passwords, setPasswords] = useState({ currentPassword: '', newPassword: '', confirmPassword: '' })
+  const [profileForm, setProfileForm] = useState({ name: user?.name || '', email: user?.email || '' })
   const [saving, setSaving] = useState(false)
+  const [savingProfile, setSavingProfile] = useState(false)
   const [revenueVisible, setRevenueVisible] = useState(false)
   const [revenueLoading, setRevenueLoading] = useState(false)
   const [stats, setStats] = useState(null)
@@ -57,6 +59,20 @@ export default function Profile() {
       toast.error(err?.response?.data?.message || 'Failed to update password')
     } finally {
       setSaving(false)
+    }
+  }
+
+  const handleProfileUpdate = async (e) => {
+    e.preventDefault()
+    setSavingProfile(true)
+    try {
+      const { data } = await api.put('/auth/admin/profile', profileForm)
+      setUser(data) // update auth context
+      toast.success('Profile updated successfully')
+    } catch (err) {
+      toast.error(err?.response?.data?.message || 'Failed to update profile')
+    } finally {
+      setSavingProfile(false)
     }
   }
 
@@ -163,6 +179,44 @@ export default function Profile() {
           </div>
           <button className="btn btn-primary" type="submit" disabled={saving}>
             <Lock size={16} /> {saving ? 'Updating...' : 'Update Password'}
+          </button>
+        </form>
+      </div>
+
+      <div className="card" style={{ marginTop: 20, maxWidth: 620 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20 }}>
+          <div className="profile-icon"><UserRound size={20} /></div>
+          <div>
+            <h3 style={{ fontSize: 16, fontWeight: 800 }}>Change Name & Email</h3>
+            <p style={{ color: 'var(--text-muted)', fontSize: 12 }}>
+              Update your admin profile details.
+            </p>
+          </div>
+        </div>
+
+        <form onSubmit={handleProfileUpdate}>
+          <div className="form-group">
+            <label className="form-label">Name</label>
+            <input
+              className="form-control"
+              type="text"
+              value={profileForm.name}
+              onChange={e => setProfileForm({ ...profileForm, name: e.target.value })}
+              required
+            />
+          </div>
+          <div className="form-group">
+            <label className="form-label">Email</label>
+            <input
+              className="form-control"
+              type="email"
+              value={profileForm.email}
+              onChange={e => setProfileForm({ ...profileForm, email: e.target.value })}
+              required
+            />
+          </div>
+          <button className="btn btn-primary" type="submit" disabled={savingProfile}>
+            <UserRound size={16} /> {savingProfile ? 'Updating...' : 'Update Profile'}
           </button>
         </form>
       </div>

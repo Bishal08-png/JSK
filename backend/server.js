@@ -43,10 +43,10 @@ app.use('/api/auth',     authRoutes)
 app.use('/api/products', productRoutes)
 app.use('/api/bills',    billRoutes)
 
-app.get('/', (req, res) => res.json({ message: 'Lokonath Enterprise API Running' }))
+app.get('/', (req, res) => res.json({ message: 'Lokenath Enterprise API Running' }))
 
 const seedAdmin = async () => {
-  const adminEmail = process.env.ADMIN_EMAIL || 'admin@lokonathenterprise.com'
+  const adminEmail = process.env.ADMIN_EMAIL || 'admin@lokenathenterprise.com'
   const existingAdmin = await User.findOne({ email: adminEmail.toLowerCase(), role: 'admin' })
   if (existingAdmin) return
 
@@ -67,7 +67,7 @@ if (process.env.NODE_ENV !== 'production') {
   connectDB()
     .then(async () => {
       console.log('MongoDB Atlas connected')
-      app.listen(PORT, () => console.log(`Lokonath Enterprise server running on http://localhost:${PORT}`))
+      app.listen(PORT, () => console.log(`Lokenath Enterprise server running on http://localhost:${PORT}`))
     })
     .catch(err => {
       console.error('MongoDB connection failed:', err.message)
