@@ -1,0 +1,5 @@
+backend/
+node_modules/
+.git/
+README.md
+package-lock.json
