@@ -233,11 +233,24 @@ export default function SalesHistory() {
   const [downloading, setDownloading] = useState(false)
   const handleDownloadReport = async () => {
     if (!date) return toast.error('Please select a date first')
-    if (bills.length === 0) return toast.error('No sales data for this date')
+    
+    // Ensure we only use bills for the selected date, in case the user didn't click "Apply Filter"
+    const reportBills = bills.filter(b => {
+      const d = new Date(b.createdAt);
+      const yyyy = d.getFullYear();
+      const mm = String(d.getMonth() + 1).padStart(2, '0');
+      const dd = String(d.getDate()).padStart(2, '0');
+      return `${yyyy}-${mm}-${dd}` === date;
+    });
+
+    if (reportBills.length === 0) {
+      return toast.error('No sales data for this date in the current view. Please apply the filter first.')
+    }
     
     setDownloading(true)
     const reportDateStr = fmtDay(date)
-    const reportRevenue = bills.reduce((s, b) => s + b.grandTotal, 0)
+    const reportRevenue = reportBills.reduce((s, b) => s + b.grandTotal, 0)
+    const reportTotalDiscount = reportBills.reduce((s, b) => s + b.totalDiscount, 0)
     
     // Create hidden report container
     const root = document.createElement('div')
@@ -270,11 +283,11 @@ export default function SalesHistory() {
         </div>
         <div style="background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 7px; padding: 9px; text-align: center;">
           <p style="margin: 0 0 3px; font-size: 9px; color: #6b7280; text-transform: uppercase; letter-spacing: 0.05em;">Total Bills</p>
-          <p style="margin: 0; font-size: 15px; font-weight: 800; color: #4c1d95;">${bills.length}</p>
+          <p style="margin: 0; font-size: 15px; font-weight: 800; color: #4c1d95;">${reportBills.length}</p>
         </div>
         <div style="background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 7px; padding: 9px; text-align: center;">
           <p style="margin: 0 0 3px; font-size: 9px; color: #6b7280; text-transform: uppercase; letter-spacing: 0.05em;">Total Discount</p>
-          <p style="margin: 0; font-size: 15px; font-weight: 800; color: #d97706;">${fmt(totalDiscount)}</p>
+          <p style="margin: 0; font-size: 15px; font-weight: 800; color: #d97706;">${fmt(reportTotalDiscount)}</p>
         </div>
       </div>
 
@@ -289,7 +302,7 @@ export default function SalesHistory() {
           </tr>
         </thead>
         <tbody>
-          ${bills.map(b => `
+          ${reportBills.map(b => `
             <tr>
               <td style="padding: 5px 7px; border: 1px solid #e5e7eb; font-weight: 700; color: #111827;">${b.billNumber}</td>
               <td style="padding: 5px 7px; border: 1px solid #e5e7eb; color: #374151;">${b.customerName}</td>
