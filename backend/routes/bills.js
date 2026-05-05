@@ -42,10 +42,11 @@ router.post('/', protect, adminOnly, async (req, res) => {
 
     // Generate sequential bill number based on user prefix
     let prefix = 'LK-';
+    const mainAdminEmail = process.env.ADMIN_EMAIL || 'admin@jsk.com';
     if (req.user.email === 'bishal8@gmail.com') {
       prefix = 'DEMO-';
-    } else if (req.user.email !== 'admin@jsk.com') {
-      prefix = `INV-${req.user._id.toString().slice(-4).toUpperCase()}-`;
+    } else if (req.user.email.toLowerCase() !== mainAdminEmail.toLowerCase()) {
+      prefix = `LK-${req.user._id.toString().slice(-4).toUpperCase()}-`;
     }
 
     const regex = new RegExp(`^${prefix}0`);

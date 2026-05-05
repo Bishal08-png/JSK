@@ -46,7 +46,7 @@ app.use('/api/bills',    billRoutes)
 app.get('/', (req, res) => res.json({ message: 'Lokenath Enterprise API Running' }))
 
 const seedAdmin = async () => {
-  const adminEmail = process.env.ADMIN_EMAIL || 'admin@lokenathenterprise.com'
+  const adminEmail = process.env.ADMIN_EMAIL || 'admin@jsk.com'
   const existingAdmin = await User.findOne({ email: adminEmail.toLowerCase(), role: 'admin' })
   if (!existingAdmin) {
     await User.create({

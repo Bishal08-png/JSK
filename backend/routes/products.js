@@ -14,7 +14,8 @@ router.get('/', protect, async (req, res) => {
     } else {
       // Customers see the main admin's products
       const User = require('../models/User');
-      const mainAdmin = await User.findOne({ email: 'admin@jsk.com' });
+      const mainAdminEmail = process.env.ADMIN_EMAIL || 'admin@jsk.com';
+      const mainAdmin = await User.findOne({ email: mainAdminEmail.toLowerCase() });
       if (mainAdmin) {
         queryObj.createdBy = mainAdmin._id;
       } else {
