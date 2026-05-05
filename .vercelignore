@@ -1,5 +1,8 @@
-backend/
 node_modules/
 .git/
 README.md
 package-lock.json
+dist/
+frontend/src/
+frontend/public/
+frontend/node_modules/

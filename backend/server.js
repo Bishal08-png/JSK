@@ -39,9 +39,9 @@ app.use('/api', async (req, res, next) => {
   }
 })
 
-app.use('/api/auth',     authRoutes)
-app.use('/api/products', productRoutes)
-app.use('/api/bills',    billRoutes)
+app.use(['/api/auth', '/_/backend/api/auth'], authRoutes)
+app.use(['/api/products', '/_/backend/api/products'], productRoutes)
+app.use(['/api/bills', '/_/backend/api/bills'], billRoutes)
 
 app.get('/', (req, res) => res.json({ message: 'Lokenath Enterprise API Running' }))
 
