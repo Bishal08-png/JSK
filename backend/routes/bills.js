@@ -29,7 +29,7 @@ router.post("/", protect, adminOnly, async (req, res) => {
         _id: item.productId,
         isActive: { $ne: false },
         $or: [
-          { createdBy: mainAdminId },
+          { createdBy: req.user._id },
           { createdBy: { $exists: false } },
           { createdBy: null }
         ]
@@ -113,16 +113,15 @@ router.get("/", protect, adminOnly, async (req, res) => {
     }
     const mainAdminId = mainAdmin ? mainAdmin._id : req.user._id;
 
-    // Show all bills to the main admin. 
-    // Show own bills + old bills (no createdBy) to others.
-    const filter = {};
-    if (req.user._id.toString() !== mainAdminId.toString()) {
-      filter.$or = [
+    // All admins (including main admin) see ONLY their own bills + old bills.
+    // This ensures isolation between different admin accounts.
+    const filter = {
+      $or: [
         { createdBy: req.user._id },
         { createdBy: { $exists: false } },
         { createdBy: null }
-      ];
-    }
+      ]
+    };
 
     if (date) {
       const start = new Date(date);
@@ -151,14 +150,13 @@ router.get("/stats", protect, adminOnly, async (req, res) => {
     }
     const mainAdminId = mainAdmin ? mainAdmin._id : req.user._id;
 
-    const queryFilter = {};
-    if (req.user._id.toString() !== mainAdminId.toString()) {
-      queryFilter.$or = [
+    const queryFilter = {
+      $or: [
         { createdBy: req.user._id },
         { createdBy: { $exists: false } },
         { createdBy: null }
-      ];
-    }
+      ]
+    };
 
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -214,14 +212,13 @@ router.get("/daywise", protect, adminOnly, async (req, res) => {
     }
     const mainAdminId = mainAdmin ? mainAdmin._id : req.user._id;
 
-    const aggregateFilter = {};
-    if (req.user._id.toString() !== mainAdminId.toString()) {
-      aggregateFilter.$or = [
+    const aggregateFilter = {
+      $or: [
         { createdBy: req.user._id },
         { createdBy: { $exists: false } },
         { createdBy: null }
-      ];
-    }
+      ]
+    };
 
     const groups = await Bill.aggregate([
       { $match: aggregateFilter },
@@ -270,7 +267,12 @@ router.patch("/:id", protect, adminOnly, async (req, res) => {
     const mainAdminId = mainAdmin ? mainAdmin._id : req.user._id;
 
     const bill = await Bill.findOne({
-      _id: req.params.id
+      _id: req.params.id,
+      $or: [
+        { createdBy: req.user._id },
+        { createdBy: { $exists: false } },
+        { createdBy: null }
+      ]
     });
     if (!bill) return res.status(404).json({ message: "Bill not found" });
 
@@ -293,7 +295,12 @@ router.patch("/:id", protect, adminOnly, async (req, res) => {
     for (const item of items) {
       const product = await Product.findOne({
         _id: item.productId,
-        isActive: { $ne: false }
+        isActive: { $ne: false },
+        $or: [
+          { createdBy: req.user._id },
+          { createdBy: { $exists: false } },
+          { createdBy: null }
+        ]
       });
       if (!product)
         return res
@@ -354,7 +361,12 @@ router.delete("/:id", protect, adminOnly, async (req, res) => {
     const mainAdminId = mainAdmin ? mainAdmin._id : req.user._id;
 
     const bill = await Bill.findOne({
-      _id: req.params.id
+      _id: req.params.id,
+      $or: [
+        { createdBy: req.user._id },
+        { createdBy: { $exists: false } },
+        { createdBy: null }
+      ]
     });
     if (!bill) return res.status(404).json({ message: "Bill not found" });
 
