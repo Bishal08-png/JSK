@@ -64,17 +64,18 @@ router.post("/", protect, adminOnly, async (req, res) => {
     const prefix = "LK-";
 
     const regex = new RegExp(`^${prefix}`);
-    const lastSequentialBill = await Bill.findOne({
-      billNumber: regex
-    }).sort({ billNumber: -1 });
+    const allBillsWithPrefix = await Bill.find({ billNumber: regex }, "billNumber");
+    
+    let maxNum = 0;
+    allBillsWithPrefix.forEach(b => {
+      const numStr = b.billNumber.substring(prefix.length);
+      const num = parseInt(numStr, 10);
+      if (!isNaN(num) && num > maxNum) maxNum = num;
+    });
 
-    let nextNum = 1;
-    if (lastSequentialBill) {
-      const numStr = lastSequentialBill.billNumber.substring(prefix.length);
-      if (numStr) {
-        nextNum = parseInt(numStr, 10) + 1;
-      }
-    }
+    const nextNum = maxNum + 1;
+
+
     const billNumberStr = `${prefix}${String(nextNum).padStart(11, "0")}`;
 
     const grandTotal = parseFloat((subtotal - totalDiscount).toFixed(2));
