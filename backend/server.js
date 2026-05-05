@@ -8,33 +8,26 @@ const authRoutes    = require('./routes/auth')
 const productRoutes = require('./routes/products')
 const billRoutes    = require('./routes/bills')
 
+const dbConnect = require('./config/db')
+
 const app = express()
 app.use(cors({ origin: '*' }))
 app.use(express.json())
 
-let mongoConnection
-let adminSeedPromise
+let adminSeedPromise = null
 
-const connectDB = async () => {
-  if (mongoose.connection.readyState === 1) return
-
-  if (!process.env.MONGO_URI) {
-    throw new Error('MONGO_URI environment variable is not configured')
-  }
-
-  mongoConnection ||= mongoose.connect(process.env.MONGO_URI)
-  await mongoConnection
-
-  adminSeedPromise ||= seedAdmin()
-  await adminSeedPromise
-}
-
-app.use('/api', async (req, res, next) => {
+app.use(['/api', '/_/backend/api'], async (req, res, next) => {
   try {
-    await connectDB()
+    await dbConnect()
+    
+    if (!adminSeedPromise) {
+      adminSeedPromise = seedAdmin()
+    }
+    await adminSeedPromise
+    
     next()
   } catch (err) {
-    console.error('MongoDB connection failed:', err.message)
+    console.error('Database initialization failed:', err.message)
     res.status(500).json({ message: 'Database connection failed' })
   }
 })
