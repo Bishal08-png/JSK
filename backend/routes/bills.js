@@ -17,7 +17,7 @@ router.post("/", protect, adminOnly, async (req, res) => {
 
     // Get main admin
     const User = require("../models/User");
-    const mainAdminEmail = (process.env.ADMIN_EMAIL || "admin@jsk.com").toLowerCase();
+    const mainAdminEmail = (process.env.ADMIN_EMAIL || "rickdas4455@gmail.com").toLowerCase();
     let mainAdmin = await User.findOne({ email: mainAdminEmail });
     if (!mainAdmin) {
       mainAdmin = await User.findOne({ role: "admin" }).sort({ createdAt: 1 });
