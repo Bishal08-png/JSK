@@ -11,12 +11,17 @@ router.get("/", protect, async (req, res) => {
     const User = require("../models/User");
     const mainAdminEmail = (process.env.ADMIN_EMAIL || "admin@jsk.com").toLowerCase();
     let mainAdmin = await User.findOne({ email: mainAdminEmail });
+    
+    // Fallback: If specific email not found, use the first created admin
     if (!mainAdmin) {
       mainAdmin = await User.findOne({ role: "admin" }).sort({ createdAt: 1 });
     }
-    const mainAdminId = mainAdmin ? mainAdmin._id : req.user._id;
 
-    if (req.user.role === 'admin') {
+    // Determine target ID for customer view
+    // If no admin found at all, we fallback to req.user._id only if they are an admin
+    const mainAdminId = mainAdmin ? mainAdmin._id : (req.user && req.user.role === 'admin' ? req.user._id : null);
+
+    if (req.user && req.user.role === 'admin') {
       // Admins see their own products + old products
       queryObj.$or = [
         { createdBy: req.user._id },
