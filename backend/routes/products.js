@@ -8,30 +8,6 @@ router.get("/", protect, async (req, res) => {
   try {
     let queryObj = { isActive: { $ne: false } };
 
-    const User = require("../models/User");
-    const mainAdminEmail = (process.env.ADMIN_EMAIL || "admin@jsk.com").toLowerCase();
-    let mainAdmin = await User.findOne({ email: mainAdminEmail });
-    if (!mainAdmin) {
-      mainAdmin = await User.findOne({ role: "admin" }).sort({ createdAt: 1 });
-    }
-    const mainAdminId = mainAdmin ? mainAdmin._id : req.user._id;
-
-    if (req.user.role === 'admin') {
-      // Admins see their own products + old products
-      queryObj.$or = [
-        { createdBy: req.user._id },
-        { createdBy: { $exists: false } },
-        { createdBy: null }
-      ];
-    } else {
-      // Customers see main admin's products + old products
-      queryObj.$or = [
-        { createdBy: mainAdminId },
-        { createdBy: { $exists: false } },
-        { createdBy: null }
-      ];
-    }
-
     const products = await Product.find(queryObj).sort({ dateAdded: -1 });
     res.json(products);
   } catch (err) {

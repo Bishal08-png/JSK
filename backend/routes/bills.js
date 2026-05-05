@@ -27,12 +27,7 @@ router.post("/", protect, adminOnly, async (req, res) => {
     for (const item of items) {
       const product = await Product.findOne({
         _id: item.productId,
-        isActive: { $ne: false },
-        $or: [
-          { createdBy: req.user._id },
-          { createdBy: { $exists: false } },
-          { createdBy: null }
-        ]
+        isActive: { $ne: false }
       });
       if (!product)
         return res
@@ -295,12 +290,7 @@ router.patch("/:id", protect, adminOnly, async (req, res) => {
     for (const item of items) {
       const product = await Product.findOne({
         _id: item.productId,
-        isActive: { $ne: false },
-        $or: [
-          { createdBy: req.user._id },
-          { createdBy: { $exists: false } },
-          { createdBy: null }
-        ]
+        isActive: { $ne: false }
       });
       if (!product)
         return res
