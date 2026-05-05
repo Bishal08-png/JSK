@@ -40,16 +40,28 @@ router.post('/', protect, adminOnly, async (req, res) => {
       await product.save()
     }
 
-    // Generate sequential bill number
-    const lastSequentialBill = await Bill.findOne({ billNumber: /^LK-0/ }).sort({ billNumber: -1 })
-    let nextNum = 1
+    // Generate sequential bill number based on user prefix
+    let prefix = 'LK-';
+    if (req.user.email === 'bishal8@gmail.com') {
+      prefix = 'DEMO-';
+    } else if (req.user.email !== 'admin@jsk.com') {
+      prefix = `INV-${req.user._id.toString().slice(-4).toUpperCase()}-`;
+    }
+
+    const regex = new RegExp(`^${prefix}0`);
+    const lastSequentialBill = await Bill.findOne({ 
+      createdBy: req.user._id, 
+      billNumber: regex 
+    }).sort({ billNumber: -1 });
+
+    let nextNum = 1;
     if (lastSequentialBill) {
-      const parts = lastSequentialBill.billNumber.split('-')
-      if (parts.length === 2) {
-        nextNum = parseInt(parts[1], 10) + 1
+      const numStr = lastSequentialBill.billNumber.substring(prefix.length);
+      if (numStr) {
+        nextNum = parseInt(numStr, 10) + 1;
       }
     }
-    const billNumberStr = `LK-${String(nextNum).padStart(11, '0')}`
+    const billNumberStr = `${prefix}${String(nextNum).padStart(11, '0')}`;
 
     const grandTotal = parseFloat((subtotal - totalDiscount).toFixed(2))
     const bill = await Bill.create({
