@@ -211,7 +211,7 @@ body {
 .btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
 
 /* ─── Table ──────────────────────────── */
-.table-wrap { overflow-x: auto; border-radius: var(--radius); }
+.table-wrap { overflow-x: auto; border-radius: var(--radius); -webkit-overflow-scrolling: touch; margin-bottom: 16px; }
 table { width: 100%; border-collapse: collapse; font-size: 14px; }
 thead { background: var(--bg-card2); }
 th {
@@ -372,17 +372,22 @@ tr:hover td { background: rgba(46,157,200,0.06); }
   .pos-grid { grid-template-columns: 1fr; }
 }
 @media (max-width: 600px) {
-  .page-content { padding: 16px; }
-  .auth-card { padding: 28px 20px; }
+  .page-content { padding: 12px; }
+  .auth-card { padding: 24px 16px; }
   .grid-2, .grid-3, .grid-4, .dashboard-grid { grid-template-columns: 1fr; }
-  .topbar { padding: 0 16px; gap: 8px; }
-  .card { padding: 16px; }
-  .stat-card { padding: 16px; }
-  .bill-preview { padding: 16px; }
-  .topbar-title { font-size: 16px; max-width: 140px; }
-  .app-footer { flex-direction: column; align-items: flex-start; padding: 14px 16px; }
+  .topbar { padding: 0 12px; gap: 6px; }
+  .topbar-user .user-info { display: none; }
+  .card { padding: 14px; }
+  .stat-card { padding: 14px; }
+  .stat-value { font-size: 24px; }
+  .bill-preview { padding: 12px; }
+  .topbar-title { font-size: 15px; max-width: 180px; }
+  .app-footer { flex-direction: column; align-items: center; text-align: center; padding: 14px 12px; gap: 8px; }
+  .app-footer span { text-align: center !important; }
   .profile-grid { grid-template-columns: 1fr; }
   .product-grid { grid-template-columns: 1fr; }
+  .welcome-title { font-size: clamp(24px, 7vw, 36px); }
+  .auth-logo h1 { font-size: 24px; }
 }
 
 

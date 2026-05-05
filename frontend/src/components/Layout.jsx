@@ -38,7 +38,7 @@ export default function Layout() {
             <div className="avatar">
               <img src={krishnaImageUrl} alt="Radha Krishna" />
             </div>
-            <div style={{ display: 'flex', flexDirection: 'column' }}>
+            <div className="user-info" style={{ display: 'flex', flexDirection: 'column' }}>
               <span style={{ fontSize: 13, fontWeight: 600 }}>{displayName}</span>
               <span style={{ fontSize: 10, color: 'var(--text-muted)', textTransform: 'capitalize' }}>{user?.role}</span>
             </div>
