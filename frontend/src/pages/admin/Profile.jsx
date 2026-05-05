@@ -125,9 +125,9 @@ export default function Profile() {
 
       setAdminImage(data.image);
       // Update the user context with the new image
-      const currentUser = JSON.parse(localStorage.getItem("user") || "{}");
+      const currentUser = JSON.parse(localStorage.getItem("jsk_user") || "{}");
       currentUser.image = data.image;
-      localStorage.setItem("user", JSON.stringify(currentUser));
+      localStorage.setItem("jsk_user", JSON.stringify(currentUser));
       login(currentUser);
 
       toast.success("Profile image updated successfully");
