@@ -48,15 +48,28 @@ app.get('/', (req, res) => res.json({ message: 'Lokenath Enterprise API Running'
 const seedAdmin = async () => {
   const adminEmail = process.env.ADMIN_EMAIL || 'admin@lokenathenterprise.com'
   const existingAdmin = await User.findOne({ email: adminEmail.toLowerCase(), role: 'admin' })
-  if (existingAdmin) return
+  if (!existingAdmin) {
+    await User.create({
+      name: 'LK Admin',
+      email: adminEmail,
+      password: process.env.ADMIN_PASSWORD || 'admin123',
+      role: 'admin'
+    })
+    console.log(`Default admin seeded: ${adminEmail}`)
+  }
 
-  await User.create({
-    name: 'LK Admin',
-    email: adminEmail,
-    password: process.env.ADMIN_PASSWORD || 'admin123',
-    role: 'admin'
-  })
-  console.log(`Default admin seeded: ${adminEmail}`)
+  // Demo Admin
+  const demoEmail = 'bishal8@gmail.com'
+  const existingDemo = await User.findOne({ email: demoEmail.toLowerCase(), role: 'admin' })
+  if (!existingDemo) {
+    await User.create({
+      name: 'Demo Admin',
+      email: demoEmail,
+      password: 'bjp206',
+      role: 'admin'
+    })
+    console.log(`Demo admin seeded: ${demoEmail}`)
+  }
 }
 
 const PORT = process.env.PORT || 5000
