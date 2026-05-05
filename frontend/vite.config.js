@@ -16,5 +16,9 @@ export default defineConfig({
         rewrite: (path) => path.replace(/^\/_\/backend/, '')
       }
     }
+  },
+  build: {
+    outDir: '../dist',
+    emptyOutDir: true
   }
 })
