@@ -102,13 +102,20 @@ router.get("/", protect, adminOnly, async (req, res) => {
 
     // Get main admin
     const User = require("../models/User");
-    const mainAdminEmail = process.env.ADMIN_EMAIL || "admin@jsk.com";
-    const mainAdmin = await User.findOne({
-      email: mainAdminEmail.toLowerCase(),
-    });
+    const mainAdminEmail = (process.env.ADMIN_EMAIL || "admin@jsk.com").toLowerCase();
+    let mainAdmin = await User.findOne({ email: mainAdminEmail });
+    if (!mainAdmin) {
+      mainAdmin = await User.findOne({ role: "admin" }).sort({ createdAt: 1 });
+    }
     const mainAdminId = mainAdmin ? mainAdmin._id : req.user._id;
 
-    const filter = { createdBy: mainAdminId };
+    const filter = {
+      $or: [
+        { createdBy: mainAdminId },
+        { createdBy: { $exists: false } },
+        { createdBy: null }
+      ]
+    };
 
     if (date) {
       const start = new Date(date);
@@ -130,11 +137,20 @@ router.get("/stats", protect, adminOnly, async (req, res) => {
   try {
     // Get main admin
     const User = require("../models/User");
-    const mainAdminEmail = process.env.ADMIN_EMAIL || "admin@jsk.com";
-    const mainAdmin = await User.findOne({
-      email: mainAdminEmail.toLowerCase(),
-    });
+    const mainAdminEmail = (process.env.ADMIN_EMAIL || "admin@jsk.com").toLowerCase();
+    let mainAdmin = await User.findOne({ email: mainAdminEmail });
+    if (!mainAdmin) {
+      mainAdmin = await User.findOne({ role: "admin" }).sort({ createdAt: 1 });
+    }
     const mainAdminId = mainAdmin ? mainAdmin._id : req.user._id;
+
+    const queryFilter = {
+      $or: [
+        { createdBy: mainAdminId },
+        { createdBy: { $exists: false } },
+        { createdBy: null }
+      ]
+    };
 
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -142,7 +158,7 @@ router.get("/stats", protect, adminOnly, async (req, res) => {
     tomorrow.setDate(today.getDate() + 1);
 
     const [allStats] = await Bill.aggregate([
-      { $match: { createdBy: mainAdminId } },
+      { $match: queryFilter },
       {
         $group: {
           _id: null,
@@ -154,7 +170,7 @@ router.get("/stats", protect, adminOnly, async (req, res) => {
     const [todayStats] = await Bill.aggregate([
       {
         $match: {
-          createdBy: mainAdminId,
+          ...queryFilter,
           createdAt: { $gte: today, $lt: tomorrow },
         },
       },
@@ -183,14 +199,23 @@ router.get("/daywise", protect, adminOnly, async (req, res) => {
   try {
     // Get main admin
     const User = require("../models/User");
-    const mainAdminEmail = process.env.ADMIN_EMAIL || "admin@jsk.com";
-    const mainAdmin = await User.findOne({
-      email: mainAdminEmail.toLowerCase(),
-    });
+    const mainAdminEmail = (process.env.ADMIN_EMAIL || "admin@jsk.com").toLowerCase();
+    let mainAdmin = await User.findOne({ email: mainAdminEmail });
+    if (!mainAdmin) {
+      mainAdmin = await User.findOne({ role: "admin" }).sort({ createdAt: 1 });
+    }
     const mainAdminId = mainAdmin ? mainAdmin._id : req.user._id;
 
     const groups = await Bill.aggregate([
-      { $match: { createdBy: mainAdminId } },
+      {
+        $match: {
+          $or: [
+            { createdBy: mainAdminId },
+            { createdBy: { $exists: false } },
+            { createdBy: null }
+          ]
+        }
+      },
       {
         $group: {
           _id: {
@@ -228,15 +253,20 @@ router.patch("/:id", protect, adminOnly, async (req, res) => {
   try {
     // Get main admin
     const User = require("../models/User");
-    const mainAdminEmail = process.env.ADMIN_EMAIL || "admin@jsk.com";
-    const mainAdmin = await User.findOne({
-      email: mainAdminEmail.toLowerCase(),
-    });
+    const mainAdminEmail = (process.env.ADMIN_EMAIL || "admin@jsk.com").toLowerCase();
+    let mainAdmin = await User.findOne({ email: mainAdminEmail });
+    if (!mainAdmin) {
+      mainAdmin = await User.findOne({ role: "admin" }).sort({ createdAt: 1 });
+    }
     const mainAdminId = mainAdmin ? mainAdmin._id : req.user._id;
 
     const bill = await Bill.findOne({
       _id: req.params.id,
-      createdBy: mainAdminId,
+      $or: [
+        { createdBy: mainAdminId },
+        { createdBy: { $exists: false } },
+        { createdBy: null }
+      ]
     });
     if (!bill) return res.status(404).json({ message: "Bill not found" });
 
@@ -260,7 +290,11 @@ router.patch("/:id", protect, adminOnly, async (req, res) => {
       const product = await Product.findOne({
         _id: item.productId,
         isActive: true,
-        createdBy: mainAdminId,
+        $or: [
+          { createdBy: mainAdminId },
+          { createdBy: { $exists: false } },
+          { createdBy: null }
+        ]
       });
       if (!product)
         return res
@@ -313,15 +347,20 @@ router.delete("/:id", protect, adminOnly, async (req, res) => {
   try {
     // Get main admin
     const User = require("../models/User");
-    const mainAdminEmail = process.env.ADMIN_EMAIL || "admin@jsk.com";
-    const mainAdmin = await User.findOne({
-      email: mainAdminEmail.toLowerCase(),
-    });
+    const mainAdminEmail = (process.env.ADMIN_EMAIL || "admin@jsk.com").toLowerCase();
+    let mainAdmin = await User.findOne({ email: mainAdminEmail });
+    if (!mainAdmin) {
+      mainAdmin = await User.findOne({ role: "admin" }).sort({ createdAt: 1 });
+    }
     const mainAdminId = mainAdmin ? mainAdmin._id : req.user._id;
 
     const bill = await Bill.findOne({
       _id: req.params.id,
-      createdBy: mainAdminId,
+      $or: [
+        { createdBy: mainAdminId },
+        { createdBy: { $exists: false } },
+        { createdBy: null }
+      ]
     });
     if (!bill) return res.status(404).json({ message: "Bill not found" });
 
