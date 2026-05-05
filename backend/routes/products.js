@@ -9,7 +9,7 @@ router.get("/", protect, async (req, res) => {
     let queryObj = { isActive: { $ne: false } };
 
     const User = require("../models/User");
-    const mainAdminEmail = (process.env.ADMIN_EMAIL || "rickdas4455@gmail.com").toLowerCase();
+    const mainAdminEmail = (process.env.ADMIN_EMAIL || "admin@jsk.com").toLowerCase();
     let mainAdmin = await User.findOne({ email: mainAdminEmail });
     
     // Fallback: If specific email not found, use the first created admin
