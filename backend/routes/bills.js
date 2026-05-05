@@ -86,7 +86,7 @@ router.post("/", protect, adminOnly, async (req, res) => {
       subtotal: parseFloat(subtotal.toFixed(2)),
       totalDiscount: parseFloat(totalDiscount.toFixed(2)),
       grandTotal,
-      createdBy: mainAdminId,
+      createdBy: req.user._id,
     });
 
     res.status(201).json(bill);

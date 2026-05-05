@@ -8,6 +8,30 @@ router.get("/", protect, async (req, res) => {
   try {
     let queryObj = { isActive: { $ne: false } };
 
+    const User = require("../models/User");
+    const mainAdminEmail = (process.env.ADMIN_EMAIL || "admin@jsk.com").toLowerCase();
+    let mainAdmin = await User.findOne({ email: mainAdminEmail });
+    if (!mainAdmin) {
+      mainAdmin = await User.findOne({ role: "admin" }).sort({ createdAt: 1 });
+    }
+    const mainAdminId = mainAdmin ? mainAdmin._id : req.user._id;
+
+    if (req.user.role === 'admin') {
+      // Admins see their own products + old products
+      queryObj.$or = [
+        { createdBy: req.user._id },
+        { createdBy: { $exists: false } },
+        { createdBy: null }
+      ];
+    } else {
+      // Customers see main admin's products + old products
+      queryObj.$or = [
+        { createdBy: mainAdminId },
+        { createdBy: { $exists: false } },
+        { createdBy: null }
+      ];
+    }
+
     const products = await Product.find(queryObj).sort({ dateAdded: -1 });
     res.json(products);
   } catch (err) {
@@ -35,14 +59,6 @@ router.post("/", protect, adminOnly, async (req, res) => {
       (mrpNum - (mrpNum * discNum) / 100).toFixed(2),
     );
 
-    // All products are created by the main admin
-    const User = require("../models/User");
-    const mainAdminEmail = process.env.ADMIN_EMAIL || "admin@jsk.com";
-    const mainAdmin = await User.findOne({
-      email: mainAdminEmail.toLowerCase(),
-    });
-    const createdById = mainAdmin ? mainAdmin._id : req.user._id;
-
     const product = await Product.create({
       name,
       quantity: Number(quantity),
@@ -50,7 +66,7 @@ router.post("/", protect, adminOnly, async (req, res) => {
       buyingPrice: Number(buyingPrice || 0),
       discountPercent: discNum,
       finalPrice: calculatedFinalPrice,
-      createdBy: createdById,
+      createdBy: req.user._id, // Strictly isolate to creator
     });
     res.status(201).json(product);
   } catch (err) {
@@ -72,7 +88,11 @@ router.put("/:id", protect, adminOnly, async (req, res) => {
     const { name, quantity, mrp, discountPercent, buyingPrice } = req.body;
     const product = await Product.findOne({
       _id: req.params.id,
-      createdBy: mainAdminId,
+      $or: [
+        { createdBy: req.user._id },
+        { createdBy: { $exists: false } },
+        { createdBy: null }
+      ]
     });
     if (!product)
       return res
@@ -111,7 +131,11 @@ router.delete("/:id", protect, adminOnly, async (req, res) => {
 
     const product = await Product.findOne({
       _id: req.params.id,
-      createdBy: mainAdminId,
+      $or: [
+        { createdBy: req.user._id },
+        { createdBy: { $exists: false } },
+        { createdBy: null }
+      ]
     });
     if (!product)
       return res
