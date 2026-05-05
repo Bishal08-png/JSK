@@ -2,7 +2,5 @@ node_modules/
 .git/
 README.md
 package-lock.json
-dist/
-frontend/src/
-frontend/public/
-frontend/node_modules/
+# Do NOT ignore frontend/src or frontend/public as Vercel needs them to build
+# Do NOT ignore backend/ as Vercel needs it for serverless functions
