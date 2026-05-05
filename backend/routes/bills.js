@@ -17,17 +17,22 @@ router.post("/", protect, adminOnly, async (req, res) => {
 
     // Get main admin
     const User = require("../models/User");
-    const mainAdminEmail = process.env.ADMIN_EMAIL || "admin@jsk.com";
-    const mainAdmin = await User.findOne({
-      email: mainAdminEmail.toLowerCase(),
-    });
+    const mainAdminEmail = (process.env.ADMIN_EMAIL || "admin@jsk.com").toLowerCase();
+    let mainAdmin = await User.findOne({ email: mainAdminEmail });
+    if (!mainAdmin) {
+      mainAdmin = await User.findOne({ role: "admin" }).sort({ createdAt: 1 });
+    }
     const mainAdminId = mainAdmin ? mainAdmin._id : req.user._id;
 
     for (const item of items) {
       const product = await Product.findOne({
         _id: item.productId,
-        isActive: true,
-        createdBy: mainAdminId,
+        isActive: { $ne: false },
+        $or: [
+          { createdBy: mainAdminId },
+          { createdBy: { $exists: false } },
+          { createdBy: null }
+        ]
       });
       if (!product)
         return res
@@ -63,10 +68,9 @@ router.post("/", protect, adminOnly, async (req, res) => {
     // Generate sequential bill number (all bills use main admin prefix)
     const prefix = "LK-";
 
-    const regex = new RegExp(`^${prefix}0`);
+    const regex = new RegExp(`^${prefix}`);
     const lastSequentialBill = await Bill.findOne({
-      createdBy: mainAdminId,
-      billNumber: regex,
+      billNumber: regex
     }).sort({ billNumber: -1 });
 
     let nextNum = 1;
@@ -109,13 +113,16 @@ router.get("/", protect, adminOnly, async (req, res) => {
     }
     const mainAdminId = mainAdmin ? mainAdmin._id : req.user._id;
 
-    const filter = {
-      $or: [
-        { createdBy: mainAdminId },
+    // Show all bills to the main admin. 
+    // Show own bills + old bills (no createdBy) to others.
+    const filter = {};
+    if (req.user._id.toString() !== mainAdminId.toString()) {
+      filter.$or = [
+        { createdBy: req.user._id },
         { createdBy: { $exists: false } },
         { createdBy: null }
-      ]
-    };
+      ];
+    }
 
     if (date) {
       const start = new Date(date);
@@ -144,13 +151,14 @@ router.get("/stats", protect, adminOnly, async (req, res) => {
     }
     const mainAdminId = mainAdmin ? mainAdmin._id : req.user._id;
 
-    const queryFilter = {
-      $or: [
-        { createdBy: mainAdminId },
+    const queryFilter = {};
+    if (req.user._id.toString() !== mainAdminId.toString()) {
+      queryFilter.$or = [
+        { createdBy: req.user._id },
         { createdBy: { $exists: false } },
         { createdBy: null }
-      ]
-    };
+      ];
+    }
 
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -206,16 +214,17 @@ router.get("/daywise", protect, adminOnly, async (req, res) => {
     }
     const mainAdminId = mainAdmin ? mainAdmin._id : req.user._id;
 
+    const aggregateFilter = {};
+    if (req.user._id.toString() !== mainAdminId.toString()) {
+      aggregateFilter.$or = [
+        { createdBy: req.user._id },
+        { createdBy: { $exists: false } },
+        { createdBy: null }
+      ];
+    }
+
     const groups = await Bill.aggregate([
-      {
-        $match: {
-          $or: [
-            { createdBy: mainAdminId },
-            { createdBy: { $exists: false } },
-            { createdBy: null }
-          ]
-        }
-      },
+      { $match: aggregateFilter },
       {
         $group: {
           _id: {
@@ -261,12 +270,7 @@ router.patch("/:id", protect, adminOnly, async (req, res) => {
     const mainAdminId = mainAdmin ? mainAdmin._id : req.user._id;
 
     const bill = await Bill.findOne({
-      _id: req.params.id,
-      $or: [
-        { createdBy: mainAdminId },
-        { createdBy: { $exists: false } },
-        { createdBy: null }
-      ]
+      _id: req.params.id
     });
     if (!bill) return res.status(404).json({ message: "Bill not found" });
 
@@ -289,12 +293,7 @@ router.patch("/:id", protect, adminOnly, async (req, res) => {
     for (const item of items) {
       const product = await Product.findOne({
         _id: item.productId,
-        isActive: true,
-        $or: [
-          { createdBy: mainAdminId },
-          { createdBy: { $exists: false } },
-          { createdBy: null }
-        ]
+        isActive: { $ne: false }
       });
       if (!product)
         return res
@@ -355,12 +354,7 @@ router.delete("/:id", protect, adminOnly, async (req, res) => {
     const mainAdminId = mainAdmin ? mainAdmin._id : req.user._id;
 
     const bill = await Bill.findOne({
-      _id: req.params.id,
-      $or: [
-        { createdBy: mainAdminId },
-        { createdBy: { $exists: false } },
-        { createdBy: null }
-      ]
+      _id: req.params.id
     });
     if (!bill) return res.status(404).json({ message: "Bill not found" });
 

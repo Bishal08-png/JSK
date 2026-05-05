@@ -6,29 +6,9 @@ const router = express.Router();
 // GET /api/products
 router.get("/", protect, async (req, res) => {
   try {
-    let queryObj = { isActive: true };
+    let queryObj = { isActive: { $ne: false } };
 
-    const User = require("../models/User");
-    const mainAdminEmail = (process.env.ADMIN_EMAIL || "admin@jsk.com").toLowerCase();
-    
-    // Find the main admin by email. If not found, fall back to the first admin in the system.
-    let mainAdmin = await User.findOne({ email: mainAdminEmail });
-    if (!mainAdmin) {
-      mainAdmin = await User.findOne({ role: "admin" }).sort({ createdAt: 1 });
-    }
-
-    if (mainAdmin) {
-      // Show products created by the main admin OR products with no createdBy field (old data)
-      queryObj.$or = [
-        { createdBy: mainAdmin._id },
-        { createdBy: { $exists: false } },
-        { createdBy: null }
-      ];
-    } else {
-      // Fallback: If no admin exists, just show all products (should not happen in normal use)
-      delete queryObj.createdBy;
-    }
-
+    // All admins see all products, including old data without createdBy or with old IDs.
     const products = await Product.find(queryObj).sort({ dateAdded: -1 });
     res.json(products);
   } catch (err) {
