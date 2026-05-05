@@ -8,7 +8,8 @@ const productSchema = new mongoose.Schema({
   discountPercent: { type: Number, required: true, min: 0, max: 100 },
   finalPrice: { type: Number, required: true },
   dateAdded: { type: Date, default: Date.now },
-  isActive: { type: Boolean, default: true }
+  isActive: { type: Boolean, default: true },
+  createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }
 });
 
 productSchema.pre('save', function (next) {

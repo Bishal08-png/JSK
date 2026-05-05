@@ -6,7 +6,7 @@ const router = express.Router()
 // GET /api/products
 router.get('/', protect, async (req, res) => {
   try {
-    const products = await Product.find({ isActive: true }).sort({ dateAdded: -1 })
+    const products = await Product.find({ isActive: true, createdBy: req.user._id }).sort({ dateAdded: -1 })
     res.json(products)
   } catch (err) { res.status(500).json({ message: err.message }) }
 })
@@ -30,7 +30,8 @@ router.post('/', protect, adminOnly, async (req, res) => {
       mrp: mrpNum,
       buyingPrice: Number(buyingPrice || 0),
       discountPercent: discNum,
-      finalPrice: calculatedFinalPrice
+      finalPrice: calculatedFinalPrice,
+      createdBy: req.user._id
     })
     res.status(201).json(product)
   } catch (err) { res.status(500).json({ message: err.message }) }
@@ -40,8 +41,8 @@ router.post('/', protect, adminOnly, async (req, res) => {
 router.put('/:id', protect, adminOnly, async (req, res) => {
   try {
     const { name, quantity, mrp, discountPercent, buyingPrice } = req.body
-    const product = await Product.findById(req.params.id)
-    if (!product) return res.status(404).json({ message: 'Product not found' })
+    const product = await Product.findOne({ _id: req.params.id, createdBy: req.user._id })
+    if (!product) return res.status(404).json({ message: 'Product not found or unauthorized' })
 
     if (name             !== undefined) product.name             = name
     if (quantity         !== undefined) product.quantity         = Number(quantity)
@@ -60,8 +61,8 @@ router.put('/:id', protect, adminOnly, async (req, res) => {
 // DELETE /api/products/:id  (soft delete)
 router.delete('/:id', protect, adminOnly, async (req, res) => {
   try {
-    const product = await Product.findById(req.params.id)
-    if (!product) return res.status(404).json({ message: 'Product not found' })
+    const product = await Product.findOne({ _id: req.params.id, createdBy: req.user._id })
+    if (!product) return res.status(404).json({ message: 'Product not found or unauthorized' })
     product.isActive = false
     await product.save()
     res.json({ message: 'Product removed' })

@@ -15,7 +15,7 @@ router.post('/', protect, adminOnly, async (req, res) => {
     const billItems = []
 
     for (const item of items) {
-      const product = await Product.findOne({ _id: item.productId, isActive: true })
+      const product = await Product.findOne({ _id: item.productId, isActive: true, createdBy: req.user._id })
       if (!product) return res.status(404).json({ message: `Product not found: ${item.productId}` })
       if (product.quantity < item.quantity)
         return res.status(400).json({ message: `Insufficient stock for "${product.name}"` })
@@ -70,7 +70,7 @@ router.post('/', protect, adminOnly, async (req, res) => {
 router.get('/', protect, adminOnly, async (req, res) => {
   try {
     const { date } = req.query
-    const filter = {}
+    const filter = { createdBy: req.user._id }
 
     if (date) {
       const start = new Date(date); start.setHours(0, 0, 0, 0)
@@ -90,10 +90,11 @@ router.get('/stats', protect, adminOnly, async (req, res) => {
     const tomorrow = new Date(today); tomorrow.setDate(today.getDate() + 1)
 
     const [allStats] = await Bill.aggregate([
+      { $match: { createdBy: req.user._id } },
       { $group: { _id: null, totalRevenue: { $sum: '$grandTotal' }, totalBills: { $sum: 1 } } }
     ])
     const [todayStats] = await Bill.aggregate([
-      { $match: { createdAt: { $gte: today, $lt: tomorrow } } },
+      { $match: { createdBy: req.user._id, createdAt: { $gte: today, $lt: tomorrow } } },
       { $group: { _id: null, todaySales: { $sum: '$grandTotal' }, todayBills: { $sum: 1 } } }
     ])
 
@@ -110,6 +111,7 @@ router.get('/stats', protect, adminOnly, async (req, res) => {
 router.get('/daywise', protect, adminOnly, async (req, res) => {
   try {
     const groups = await Bill.aggregate([
+      { $match: { createdBy: req.user._id } },
       {
         $group: {
           _id: {
@@ -141,7 +143,7 @@ router.get('/daywise', protect, adminOnly, async (req, res) => {
 // PATCH /api/bills/:id  — edit bill items (e.g. product exchange)
 router.patch('/:id', protect, adminOnly, async (req, res) => {
   try {
-    const bill = await Bill.findById(req.params.id)
+    const bill = await Bill.findOne({ _id: req.params.id, createdBy: req.user._id })
     if (!bill) return res.status(404).json({ message: 'Bill not found' })
 
     const { customerName, items } = req.body
@@ -158,7 +160,7 @@ router.patch('/:id', protect, adminOnly, async (req, res) => {
     const billItems = []
 
     for (const item of items) {
-      const product = await Product.findOne({ _id: item.productId, isActive: true })
+      const product = await Product.findOne({ _id: item.productId, isActive: true, createdBy: req.user._id })
       if (!product) return res.status(404).json({ message: `Product not found: ${item.productId}` })
       if (product.quantity < item.quantity)
         return res.status(400).json({ message: `Insufficient stock for "${product.name}"` })
@@ -199,7 +201,7 @@ router.patch('/:id', protect, adminOnly, async (req, res) => {
 // DELETE /api/bills/:id
 router.delete('/:id', protect, adminOnly, async (req, res) => {
   try {
-    const bill = await Bill.findById(req.params.id)
+    const bill = await Bill.findOne({ _id: req.params.id, createdBy: req.user._id })
     if (!bill) return res.status(404).json({ message: 'Bill not found' })
 
     // Restore stock for each item
