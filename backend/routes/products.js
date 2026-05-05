@@ -6,7 +6,23 @@ const router = express.Router()
 // GET /api/products
 router.get('/', protect, async (req, res) => {
   try {
-    const products = await Product.find({ isActive: true, createdBy: req.user._id }).sort({ dateAdded: -1 })
+    let queryObj = { isActive: true };
+    
+    if (req.user.role === 'admin') {
+      // Admins see their own products
+      queryObj.createdBy = req.user._id;
+    } else {
+      // Customers see the main admin's products
+      const User = require('../models/User');
+      const mainAdmin = await User.findOne({ email: 'admin@jsk.com' });
+      if (mainAdmin) {
+        queryObj.createdBy = mainAdmin._id;
+      } else {
+        return res.json([]); // Fallback if main admin missing
+      }
+    }
+
+    const products = await Product.find(queryObj).sort({ dateAdded: -1 })
     res.json(products)
   } catch (err) { res.status(500).json({ message: err.message }) }
 })
