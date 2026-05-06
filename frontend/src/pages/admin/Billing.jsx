@@ -159,9 +159,9 @@ export default function Billing() {
               </tbody>
             </table>
             <div className="bill-totals">
-              <div className="row"><span>Subtotal (MRP)</span><span>{fmtCur(bill.subtotal)}</span></div>
-              <div className="row" style={{ color: 'green' }}><span>Total Discount</span><span>- {fmtCur(bill.totalDiscount)}</span></div>
-              <div className="row grand"><span>GRAND TOTAL</span><span>{fmtCur(bill.grandTotal)}</span></div>
+              <div className="row"><span>Subtotal (MRP):</span><span>{fmtCur(bill.subtotal)}</span></div>
+              <div className="row" style={{ color: 'green' }}><span>Total Discount:</span><span>- {fmtCur(bill.totalDiscount)}</span></div>
+              <div className="row grand"><span>GRAND TOTAL:</span><span>{fmtCur(bill.grandTotal)}</span></div>
             </div>
             <p style={{ textAlign: 'center', marginTop: 16, fontSize: 11, color: '#666' }}>
               Thank you for shopping at {business.name}!<br />Visit Again!
