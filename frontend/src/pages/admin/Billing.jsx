@@ -2,8 +2,6 @@ import { useEffect, useState, useRef } from 'react'
 import api from '../../api/axios'
 import toast from 'react-hot-toast'
 import { Plus, Minus, Trash2, Download, Search } from 'lucide-react'
-import jsPDF from 'jspdf'
-import html2canvas from 'html2canvas'
 import { business } from '../../config/business'
 
 export default function Billing() {
@@ -88,16 +86,8 @@ export default function Billing() {
     } finally { setLoading(false) }
   }
 
-  const downloadPDF = async () => {
-    if (!billRef.current) return
-    const canvas = await html2canvas(billRef.current, { scale: 2, backgroundColor: '#fff' })
-    const img = canvas.toDataURL('image/png')
-    const pdf = new jsPDF('p', 'mm', 'a5')
-    const w = pdf.internal.pageSize.getWidth()
-    const h = (canvas.height * w) / canvas.width
-    pdf.addImage(img, 'PNG', 0, 0, w, h)
-    pdf.save(`${bill?.billNumber || 'LK-Bill'}.pdf`)
-    toast.success('Bill downloaded as PDF!')
+  const handlePrint = () => {
+    window.print()
   }
 
   const fmtCur = (n) => `Rs. ${Number(n).toFixed(2)}`
@@ -113,7 +103,7 @@ export default function Billing() {
       {bill ? (
         <div>
           <div style={{ display: 'flex', gap: 12, marginBottom: 20, flexWrap: 'wrap' }}>
-            <button className="btn btn-success" onClick={downloadPDF}><Download size={16} /> Download PDF</button>
+            <button className="btn btn-success" onClick={handlePrint}><Download size={16} /> Print / Save PDF</button>
             <button className="btn btn-secondary" onClick={() => setBill(null)}><Plus size={16} /> New Bill</button>
           </div>
           <div ref={billRef} className="bill-preview" style={{ maxWidth: 480 }}>

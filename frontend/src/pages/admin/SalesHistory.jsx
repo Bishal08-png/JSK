@@ -5,8 +5,6 @@ import {
   Calendar, ChevronDown, ChevronUp, Trash2,
   LayoutList, BarChart2, AlertTriangle, X, Download, Pencil, Plus, Minus
 } from 'lucide-react'
-import html2canvas from 'html2canvas'
-import jsPDF from 'jspdf'
 import { business } from '../../config/business'
 
 /* ─── helpers ─────────────────────────────────────── */
@@ -229,12 +227,12 @@ export default function SalesHistory() {
     } finally { setDeleting(false) }
   }
 
-  /* ── Download Report ────────────────────────────── */
-  const [downloading, setDownloading] = useState(false)
-  const handleDownloadReport = async () => {
+  /* ── Print Report ────────────────────────────── */
+  const [reportData, setReportData] = useState(null)
+  
+  const handlePrintReport = () => {
     if (!date) return toast.error('Please select a date first')
     
-    // Ensure we only use bills for the selected date, in case the user didn't click "Apply Filter"
     const reportBills = bills.filter(b => {
       const d = new Date(b.createdAt);
       const yyyy = d.getFullYear();
@@ -244,100 +242,24 @@ export default function SalesHistory() {
     });
 
     if (reportBills.length === 0) {
-      return toast.error('No sales data for this date in the current view. Please apply the filter first.')
+      return toast.error('No sales data for this date. Please apply the filter first.')
     }
     
-    setDownloading(true)
-    const reportDateStr = fmtDay(date)
-    const reportRevenue = reportBills.reduce((s, b) => s + b.grandTotal, 0)
-    const reportTotalDiscount = reportBills.reduce((s, b) => s + b.totalDiscount, 0)
+    const revenue = reportBills.reduce((s, b) => s + b.grandTotal, 0)
+    const discount = reportBills.reduce((s, b) => s + b.totalDiscount, 0)
     
-    // Create hidden report container
-    const root = document.createElement('div')
-    root.style.position = 'absolute'
-    root.style.left = '-9999px'
-    root.style.top = '0'
-    root.style.width = '800px' // A4 approx width in px
-    root.style.background = '#ffffff'
-    root.style.color = '#000000'
-    root.style.padding = '24px'
-    root.style.fontFamily = 'Inter, system-ui, sans-serif'
-    
-    root.innerHTML = `
-      <div style="border-bottom: 2px solid #4c1d95; padding-bottom: 10px; margin-bottom: 14px; display: flex; justify-content: space-between; align-items: flex-end;">
-        <div>
-          <h1 style="margin: 0; color: #4c1d95; font-size: 21px; font-weight: 800;">${business.name.toUpperCase()}</h1>
-          <p style="margin: 3px 0 0; color: #6b7280; font-size: 10px;">${business.address}</p>
-          <p style="margin: 3px 0 0; color: #6b7280; font-size: 12px; font-weight: 600;">Daily Sales Report</p>
-        </div>
-        <div style="text-align: right;">
-          <p style="margin: 0; font-size: 12px; color: #374151;">Date: <strong>${reportDateStr}</strong></p>
-          <p style="margin: 2px 0 0; font-size: 10px; color: #9ca3af;">Generated on ${new Date().toLocaleString()}</p>
-        </div>
-      </div>
+    setReportData({
+      date: fmtDay(date),
+      bills: reportBills,
+      revenue,
+      discount
+    })
 
-      <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 16px;">
-        <div style="background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 7px; padding: 9px; text-align: center;">
-          <p style="margin: 0 0 3px; font-size: 9px; color: #6b7280; text-transform: uppercase; letter-spacing: 0.05em;">Day Total</p>
-          <p style="margin: 0; font-size: 15px; font-weight: 800; color: #059669;">${fmt(reportRevenue)}</p>
-        </div>
-        <div style="background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 7px; padding: 9px; text-align: center;">
-          <p style="margin: 0 0 3px; font-size: 9px; color: #6b7280; text-transform: uppercase; letter-spacing: 0.05em;">Total Bills</p>
-          <p style="margin: 0; font-size: 15px; font-weight: 800; color: #4c1d95;">${reportBills.length}</p>
-        </div>
-        <div style="background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 7px; padding: 9px; text-align: center;">
-          <p style="margin: 0 0 3px; font-size: 9px; color: #6b7280; text-transform: uppercase; letter-spacing: 0.05em;">Total Discount</p>
-          <p style="margin: 0; font-size: 15px; font-weight: 800; color: #d97706;">${fmt(reportTotalDiscount)}</p>
-        </div>
-      </div>
-
-      <table style="width: 100%; border-collapse: collapse; font-size: 10px; color: #000000;">
-        <thead>
-          <tr style="background: #f3f4f6; text-align: left; color: #4c1d95;">
-            <th style="padding: 5px 7px; border: 1px solid #e5e7eb;">BILL ID</th>
-            <th style="padding: 5px 7px; border: 1px solid #e5e7eb;">CUSTOMER</th>
-            <th style="padding: 5px 7px; border: 1px solid #e5e7eb;">TIME</th>
-            <th style="padding: 5px 7px; border: 1px solid #e5e7eb;">ITEMS</th>
-            <th style="padding: 5px 7px; border: 1px solid #e5e7eb; text-align: right;">AMOUNT</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${reportBills.map(b => `
-            <tr>
-              <td style="padding: 5px 7px; border: 1px solid #e5e7eb; font-weight: 700; color: #111827;">${b.billNumber}</td>
-              <td style="padding: 5px 7px; border: 1px solid #e5e7eb; color: #374151;">${b.customerName}</td>
-              <td style="padding: 5px 7px; border: 1px solid #e5e7eb; color: #374151;">${fmtTime(b.createdAt)}</td>
-              <td style="padding: 5px 7px; border: 1px solid #e5e7eb; color: #374151;">${b.items.map(i => i.productName).join(', ')}</td>
-              <td style="padding: 5px 7px; border: 1px solid #e5e7eb; text-align: right; font-weight: 800; color: #111827;">${fmt(b.grandTotal)}</td>
-            </tr>
-          `).join('')}
-        </tbody>
-      </table>
-
-      <div style="margin-top: 20px; border-top: 1px dashed #e5e7eb; padding-top: 10px; text-align: center; color: #9ca3af; font-size: 9px;">
-        This is an electronically generated report from ${business.name}.
-      </div>
-    `
-    
-    document.body.appendChild(root)
-    
-    try {
-      const canvas = await html2canvas(root, { scale: 2 })
-      const imgData = canvas.toDataURL('image/png')
-      const pdf = new jsPDF('p', 'mm', 'a4')
-      const pdfWidth = pdf.internal.pageSize.getWidth()
-      const pdfHeight = (canvas.height * pdfWidth) / canvas.width
-      
-      pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight)
-      pdf.save(`LK_Report_${date}.pdf`)
-      toast.success('Report downloaded successfully!')
-    } catch (err) {
-      console.error(err)
-      toast.error('Failed to generate PDF')
-    } finally {
-      document.body.removeChild(root)
-      setDownloading(false)
-    }
+    // Small delay to allow React to render the report component before printing
+    setTimeout(() => {
+      window.print()
+      setReportData(null)
+    }, 100)
   }
 
   /* ── BillRow ──────────────────────────────────────── */
@@ -544,33 +466,29 @@ export default function SalesHistory() {
                   Clear Filter
                 </button>
                 <button 
-                  onClick={handleDownloadReport}
-                  disabled={downloading || bills.length === 0}
+                  onClick={handlePrintReport}
+                  disabled={bills.length === 0}
                   style={{
                     display: 'flex', alignItems: 'center', gap: 8,
                     padding: '10px 18px', borderRadius: 10, border: '1px solid rgba(139,92,246,0.3)',
-                    cursor: downloading ? 'not-allowed' : 'pointer', fontSize: 13, fontWeight: 700,
+                    cursor: 'pointer', fontSize: 13, fontWeight: 700,
                     background: 'rgba(139,92,246,0.1)', color: 'var(--primary-light)',
                     transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                     backdropFilter: 'blur(8px)',
                     boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
                   }}
                   onMouseEnter={e => {
-                    if (!downloading) {
-                      e.currentTarget.style.background = 'rgba(139,92,246,0.2)';
-                      e.currentTarget.style.transform = 'translateY(-2px)';
-                      e.currentTarget.style.boxShadow = '0 6px 16px rgba(139,92,246,0.2)';
-                    }
+                    e.currentTarget.style.background = 'rgba(139,92,246,0.2)';
+                    e.currentTarget.style.transform = 'translateY(-2px)';
+                    e.currentTarget.style.boxShadow = '0 6px 16px rgba(139,92,246,0.2)';
                   }}
                   onMouseLeave={e => {
-                    if (!downloading) {
-                      e.currentTarget.style.background = 'rgba(139,92,246,0.1)';
-                      e.currentTarget.style.transform = 'translateY(0)';
-                      e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.1)';
-                    }
+                    e.currentTarget.style.background = 'rgba(139,92,246,0.1)';
+                    e.currentTarget.style.transform = 'translateY(0)';
+                    e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.1)';
                   }}
                 >
-                  <Download size={15} /> {downloading ? 'Generating...' : 'Download Report'}
+                  <Download size={15} /> Print / Save PDF
                 </button>
               </>
             )}
@@ -709,6 +627,64 @@ export default function SalesHistory() {
             )}
           </div>
         </>
+      )}
+      {/* ── Hidden Printable Report ────────────────── */}
+      {reportData && (
+        <div className="print-report" style={{ display: 'none' }}>
+          <div style={{ borderBottom: '2px solid #4c1d95', paddingBottom: 10, marginBottom: 14, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+            <div>
+              <h1 style={{ margin: 0, color: '#4c1d95', fontSize: '21px', fontWeight: 800 }}>{business.name.toUpperCase()}</h1>
+              <p style={{ margin: '3px 0 0', color: '#6b7280', fontSize: '10px' }}>{business.address}</p>
+              <p style={{ margin: '3px 0 0', color: '#6b7280', fontSize: '12px', fontWeight: 600 }}>Daily Sales Report</p>
+            </div>
+            <div style={{ textAlign: 'right' }}>
+              <p style={{ margin: 0, fontSize: '12px', color: '#374151' }}>Date: <strong>{reportData.date}</strong></p>
+              <p style={{ margin: '2px 0 0', fontSize: '10px', color: '#9ca3af' }}>Generated on {new Date().toLocaleString()}</p>
+            </div>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10, marginBottom: 16 }}>
+            <div style={{ background: '#f9fafb', border: '1px solid #e5e7eb', borderRadius: 7, padding: 9, textAlign: 'center' }}>
+              <p style={{ margin: '0 0 3px', fontSize: 9, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Day Total</p>
+              <p style={{ margin: 0, fontSize: 15, fontWeight: 800, color: '#059669' }}>{fmt(reportData.revenue)}</p>
+            </div>
+            <div style={{ background: '#f9fafb', border: '1px solid #e5e7eb', borderRadius: 7, padding: 9, textAlign: 'center' }}>
+              <p style={{ margin: '0 0 3px', fontSize: 9, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Total Bills</p>
+              <p style={{ margin: 0, fontSize: 15, fontWeight: 800, color: '#4c1d95' }}>{reportData.bills.length}</p>
+            </div>
+            <div style={{ background: '#f9fafb', border: '1px solid #e5e7eb', borderRadius: 7, padding: 9, textAlign: 'center' }}>
+              <p style={{ margin: '0 0 3px', fontSize: 9, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Total Discount</p>
+              <p style={{ margin: 0, fontSize: 15, fontWeight: 800, color: '#d97706' }}>{fmt(reportData.discount)}</p>
+            </div>
+          </div>
+
+          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '10px', color: '#000000' }}>
+            <thead>
+              <tr style={{ background: '#f3f4f6', textAlign: 'left', color: '#4c1d95' }}>
+                <th style={{ padding: '5px 7px', border: '1px solid #e5e7eb' }}>BILL ID</th>
+                <th style={{ padding: '5px 7px', border: '1px solid #e5e7eb' }}>CUSTOMER</th>
+                <th style={{ padding: '5px 7px', border: '1px solid #e5e7eb' }}>TIME</th>
+                <th style={{ padding: '5px 7px', border: '1px solid #e5e7eb' }}>ITEMS</th>
+                <th style={{ padding: '5px 7px', border: '1px solid #e5e7eb', textAlign: 'right' }}>AMOUNT</th>
+              </tr>
+            </thead>
+            <tbody>
+              {reportData.bills.map(b => (
+                <tr key={b._id}>
+                  <td style={{ padding: '5px 7px', border: '1px solid #e5e7eb', fontWeight: 700, color: '#111827' }}>{b.billNumber}</td>
+                  <td style={{ padding: '5px 7px', border: '1px solid #e5e7eb', color: '#374151' }}>{b.customerName}</td>
+                  <td style={{ padding: '5px 7px', border: '1px solid #e5e7eb', color: '#374151' }}>{fmtTime(b.createdAt)}</td>
+                  <td style={{ padding: '5px 7px', border: '1px solid #e5e7eb', color: '#374151' }}>{b.items.map(i => i.productName).join(', ')}</td>
+                  <td style={{ padding: '5px 7px', border: '1px solid #e5e7eb', textAlign: 'right', fontWeight: 800, color: '#111827' }}>{fmt(b.grandTotal)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+
+          <div style={{ marginTop: 20, borderTop: '1px dashed #e5e7eb', paddingTop: 10, textAlign: 'center', color: '#9ca3af', fontSize: 9 }}>
+            This is an electronically generated report from {business.name}.
+          </div>
+        </div>
       )}
     </div>
   )
