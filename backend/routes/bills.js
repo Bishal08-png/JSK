@@ -66,17 +66,8 @@ router.post("/", protect, adminOnly, async (req, res) => {
 
     const regex = new RegExp(`^${prefix}`);
     
-    // Filter for existing bills: main admin counts own + legacy, others only own
+    // Filter for existing bills: must search globally within the prefix to ensure uniqueness
     const countFilter = { billNumber: regex };
-    if (isMainAdmin) {
-      countFilter.$or = [
-        { createdBy: req.user._id },
-        { createdBy: { $exists: false } },
-        { createdBy: null }
-      ];
-    } else {
-      countFilter.createdBy = req.user._id;
-    }
 
     const allBillsWithPrefix = await Bill.find(countFilter, "billNumber");
     
