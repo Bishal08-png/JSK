@@ -49,18 +49,6 @@
     background: #fff !important;
   }
 
-  /* Ensure all content inside printable containers is visible */
-  .bill-preview *, .print-report * {
-    display: initial !important;
-  }
-  .bill-preview div, .print-report div { display: block !important; }
-  .bill-preview p, .print-report p { display: block !important; }
-  .bill-preview h1, .print-report h1 { display: block !important; }
-  .bill-preview h2, .print-report h2 { display: block !important; }
-  .bill-preview table, .print-report table { display: table !important; }
-  .bill-preview tr, .print-report tr { display: table-row !important; }
-  .bill-preview th, .print-report th, .bill-preview td, .print-report td { display: table-cell !important; }
-
   /* Universal high-contrast for text */
   h1, h2, h3, p, span, td, th {
     color: #000 !important;
