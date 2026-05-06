@@ -1,7 +1,9 @@
 import { useEffect, useState, useRef } from 'react'
 import api from '../../api/axios'
 import toast from 'react-hot-toast'
-import { Plus, Minus, Trash2, Download, Search } from 'lucide-react'
+import { Plus, Minus, Trash2, Download, Search, Printer } from 'lucide-react'
+import jsPDF from 'jspdf'
+import html2canvas from 'html2canvas'
 import { business } from '../../config/business'
 
 export default function Billing() {
@@ -90,6 +92,30 @@ export default function Billing() {
     window.print()
   }
 
+  const [saving, setSaving] = useState(false)
+  const saveAsPDF = async () => {
+    if (!billRef.current) return
+    setSaving(true)
+    try {
+      const canvas = await html2canvas(billRef.current, { 
+        scale: 4, // High scale for crystal clear text
+        useCORS: true,
+        backgroundColor: '#ffffff'
+      })
+      const img = canvas.toDataURL('image/png')
+      const pdf = new jsPDF('p', 'mm', 'a5')
+      const w = pdf.internal.pageSize.getWidth()
+      const h = (canvas.height * w) / canvas.width
+      pdf.addImage(img, 'PNG', 0, 0, w, h)
+      pdf.save(`${bill?.billNumber || 'Bill'}.pdf`)
+      toast.success('PDF Saved!')
+    } catch (err) {
+      toast.error('Failed to save PDF')
+    } finally {
+      setSaving(false)
+    }
+  }
+
   const fmtCur = (n) => `Rs. ${Number(n).toFixed(2)}`
   const fmtDate = (d) => new Date(d).toLocaleString('en-IN')
 
@@ -103,7 +129,10 @@ export default function Billing() {
       {bill ? (
         <div>
           <div style={{ display: 'flex', gap: 12, marginBottom: 20, flexWrap: 'wrap' }}>
-            <button className="btn btn-success" onClick={handlePrint}><Download size={16} /> Print / Save PDF</button>
+            <button className="btn btn-primary" onClick={handlePrint}><Printer size={16} /> Print Bill</button>
+            <button className="btn btn-success" onClick={saveAsPDF} disabled={saving}>
+              <Download size={16} /> {saving ? 'Saving...' : 'Save PDF'}
+            </button>
             <button className="btn btn-secondary" onClick={() => setBill(null)}><Plus size={16} /> New Bill</button>
           </div>
           <div ref={billRef} className="bill-preview" style={{ maxWidth: 480 }}>

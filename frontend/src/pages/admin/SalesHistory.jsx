@@ -3,8 +3,10 @@ import api from '../../api/axios'
 import toast from 'react-hot-toast'
 import {
   Calendar, ChevronDown, ChevronUp, Trash2,
-  LayoutList, BarChart2, AlertTriangle, X, Download, Pencil, Plus, Minus
+  LayoutList, BarChart2, AlertTriangle, X, Download, Pencil, Plus, Minus, Printer
 } from 'lucide-react'
+import html2canvas from 'html2canvas'
+import jsPDF from 'jspdf'
 import { business } from '../../config/business'
 
 /* ─── helpers ─────────────────────────────────────── */
@@ -229,37 +231,96 @@ export default function SalesHistory() {
 
   /* ── Print Report ────────────────────────────── */
   const [reportData, setReportData] = useState(null)
+  const [savingReport, setSavingReport] = useState(false)
   
   const handlePrintReport = () => {
     if (!date) return toast.error('Please select a date first')
-    
     const reportBills = bills.filter(b => {
       const d = new Date(b.createdAt);
-      const yyyy = d.getFullYear();
-      const mm = String(d.getMonth() + 1).padStart(2, '0');
-      const dd = String(d.getDate()).padStart(2, '0');
-      return `${yyyy}-${mm}-${dd}` === date;
+      return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}` === date;
     });
+    if (reportBills.length === 0) return toast.error('No sales data for this date')
+    
+    setReportData({ date: fmtDay(date), bills: reportBills, revenue: reportBills.reduce((s, b) => s + b.grandTotal, 0), discount: reportBills.reduce((s, b) => s + b.totalDiscount, 0) })
+    setTimeout(() => { window.print(); setReportData(null) }, 100)
+  }
 
-    if (reportBills.length === 0) {
-      return toast.error('No sales data for this date. Please apply the filter first.')
+  const saveReportAsPDF = async () => {
+    if (!date) return toast.error('Please select a date first')
+    const reportBills = bills.filter(b => {
+      const d = new Date(b.createdAt);
+      return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}` === date;
+    });
+    if (reportBills.length === 0) return toast.error('No sales data for this date')
+
+    setSavingReport(true)
+    const reportRevenue = reportBills.reduce((s, b) => s + b.grandTotal, 0)
+    const reportDiscount = reportBills.reduce((s, b) => s + b.totalDiscount, 0)
+
+    // Create a temporary element for high-quality capture
+    const root = document.createElement('div')
+    root.style.width = '800px'
+    root.style.padding = '40px'
+    root.style.background = '#fff'
+    root.style.color = '#000'
+    root.style.fontFamily = 'Inter, sans-serif'
+    root.innerHTML = `
+      <div style="border-bottom: 2px solid #4c1d95; padding-bottom: 15px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: flex-end;">
+        <div>
+          <h1 style="margin: 0; color: #4c1d95; font-size: 24px;">${business.name.toUpperCase()}</h1>
+          <p style="margin: 5px 0; color: #666; font-size: 12px;">${business.address}</p>
+          <h2 style="margin: 10px 0 0; font-size: 16px;">Daily Sales Report</h2>
+        </div>
+        <div style="text-align: right;">
+          <p style="margin: 0; font-size: 14px;">Date: <strong>${fmtDay(date)}</strong></p>
+          <p style="margin: 5px 0; font-size: 10px; color: #999;">Generated: ${new Date().toLocaleString()}</p>
+        </div>
+      </div>
+      <div style="display: flex; gap: 20px; margin-bottom: 20px;">
+        <div style="flex: 1; border: 1px solid #eee; padding: 15px; border-radius: 8px; text-align: center;">
+          <div style="font-size: 10px; color: #888; text-transform: uppercase;">Revenue</div>
+          <div style="font-size: 18px; font-weight: 800;">₹${reportRevenue.toFixed(2)}</div>
+        </div>
+        <div style="flex: 1; border: 1px solid #eee; padding: 15px; border-radius: 8px; text-align: center;">
+          <div style="font-size: 10px; color: #888; text-transform: uppercase;">Bills</div>
+          <div style="font-size: 18px; font-weight: 800;">${reportBills.length}</div>
+        </div>
+      </div>
+      <table style="width: 100%; border-collapse: collapse; font-size: 11px;">
+        <thead style="background: #f8f9fa;">
+          <tr>
+            <th style="border: 1px solid #eee; padding: 8px; text-align: left;">Bill ID</th>
+            <th style="border: 1px solid #eee; padding: 8px; text-align: left;">Customer</th>
+            <th style="border: 1px solid #eee; padding: 8px; text-align: right;">Amount</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${reportBills.map(b => `
+            <tr>
+              <td style="border: 1px solid #eee; padding: 8px;">${b.billNumber}</td>
+              <td style="border: 1px solid #eee; padding: 8px;">${b.customerName}</td>
+              <td style="border: 1px solid #eee; padding: 8px; text-align: right; font-weight: 700;">₹${b.grandTotal.toFixed(2)}</td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+    `
+    document.body.appendChild(root)
+    try {
+      const canvas = await html2canvas(root, { scale: 3 })
+      const img = canvas.toDataURL('image/png')
+      const pdf = new jsPDF('p', 'mm', 'a4')
+      const w = pdf.internal.pageSize.getWidth()
+      const h = (canvas.height * w) / canvas.width
+      pdf.addImage(img, 'PNG', 0, 0, w, h)
+      pdf.save(`Report_${date}.pdf`)
+      toast.success('Report Saved!')
+    } catch (err) {
+      toast.error('Failed to save report')
+    } finally {
+      document.body.removeChild(root)
+      setSavingReport(false)
     }
-    
-    const revenue = reportBills.reduce((s, b) => s + b.grandTotal, 0)
-    const discount = reportBills.reduce((s, b) => s + b.totalDiscount, 0)
-    
-    setReportData({
-      date: fmtDay(date),
-      bills: reportBills,
-      revenue,
-      discount
-    })
-
-    // Small delay to allow React to render the report component before printing
-    setTimeout(() => {
-      window.print()
-      setReportData(null)
-    }, 100)
   }
 
   /* ── BillRow ──────────────────────────────────────── */
@@ -470,25 +531,26 @@ export default function SalesHistory() {
                   disabled={bills.length === 0}
                   style={{
                     display: 'flex', alignItems: 'center', gap: 8,
-                    padding: '10px 18px', borderRadius: 10, border: '1px solid rgba(139,92,246,0.3)',
+                    padding: '10px 18px', borderRadius: 10, border: '1px solid var(--primary)',
                     cursor: 'pointer', fontSize: 13, fontWeight: 700,
-                    background: 'rgba(139,92,246,0.1)', color: 'var(--primary-light)',
-                    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                    backdropFilter: 'blur(8px)',
-                    boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
-                  }}
-                  onMouseEnter={e => {
-                    e.currentTarget.style.background = 'rgba(139,92,246,0.2)';
-                    e.currentTarget.style.transform = 'translateY(-2px)';
-                    e.currentTarget.style.boxShadow = '0 6px 16px rgba(139,92,246,0.2)';
-                  }}
-                  onMouseLeave={e => {
-                    e.currentTarget.style.background = 'rgba(139,92,246,0.1)';
-                    e.currentTarget.style.transform = 'translateY(0)';
-                    e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.1)';
+                    background: 'rgba(46,157,200,0.1)', color: 'var(--primary-dark)',
+                    transition: 'all 0.2s',
                   }}
                 >
-                  <Download size={15} /> Print / Save PDF
+                  <Printer size={15} /> Print Report
+                </button>
+                <button 
+                  onClick={saveReportAsPDF}
+                  disabled={savingReport || bills.length === 0}
+                  style={{
+                    display: 'flex', alignItems: 'center', gap: 8,
+                    padding: '10px 18px', borderRadius: 10, border: '1px solid #10b981',
+                    cursor: savingReport ? 'not-allowed' : 'pointer', fontSize: 13, fontWeight: 700,
+                    background: 'rgba(16,185,129,0.1)', color: '#059669',
+                    transition: 'all 0.2s',
+                  }}
+                >
+                  <Download size={15} /> {savingReport ? 'Saving...' : 'Save PDF'}
                 </button>
               </>
             )}

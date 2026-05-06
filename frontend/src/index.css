@@ -13,24 +13,37 @@
     font-family: 'Inter', system-ui, sans-serif !important;
   }
 
-  /* Hide everything except the element to be printed */
-  body > * {
+  /* Hide specific UI layout components */
+  .sidebar, .topbar, .app-footer, .hamburger, .sidebar-overlay, .tabs, button, .btn, .search-bar {
     display: none !important;
   }
 
-  /* The actual content to print (must be shown) */
-  #printable-content, .bill-preview, .print-report {
-    display: block !important;
-    position: absolute !important;
-    left: 0 !important;
-    top: 0 !important;
-    width: 100% !important;
+  /* Reset layout for print */
+  .main-content {
+    margin-left: 0 !important;
     padding: 0 !important;
-    margin: 0 !important;
     background: #fff !important;
-    box-shadow: none !important;
-    border: none !important;
   }
+  .page-content {
+    padding: 0 !important;
+  }
+
+  /* Specific containers to show */
+  .bill-preview, .print-report {
+    display: block !important;
+    visibility: visible !important;
+    position: relative !important;
+    margin: 0 auto !important;
+    padding: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    border: none !important;
+    box-shadow: none !important;
+    background: #fff !important;
+  }
+
+  /* Hide everything else inside page-content except the printable area */
+  /* This is tricky in React, so we rely on targeted hiding above */
 
   /* Universal high-contrast for text */
   h1, h2, h3, p, span, td, th {
