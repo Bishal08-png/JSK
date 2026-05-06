@@ -14,7 +14,7 @@
   }
 
   /* Hide specific UI layout components */
-  .sidebar, .topbar, .app-footer, .hamburger, .sidebar-overlay, .tabs, button, .btn, .search-bar {
+  .no-print, .sidebar, .topbar, .app-footer, .hamburger, .sidebar-overlay, .tabs, button, .btn, .search-bar, .form-group {
     display: none !important;
   }
 
@@ -28,22 +28,38 @@
     padding: 0 !important;
   }
 
+  /* Hide regular UI containers during print */
+  .card, .stat-card, .grid, .form-group, .tabs, .topbar, .sidebar, .app-footer, .hamburger {
+    display: none !important;
+  }
+
+  /* Hide main page headers during print */
+  .page-content > h2, .page-content > p {
+    display: none !important;
+  }
+
   /* Specific containers to show */
   .bill-preview, .print-report {
     display: block !important;
     visibility: visible !important;
     position: relative !important;
     margin: 0 auto !important;
-    padding: 0 !important;
     width: 100% !important;
     max-width: 100% !important;
-    border: none !important;
-    box-shadow: none !important;
     background: #fff !important;
   }
 
-  /* Hide everything else inside page-content except the printable area */
-  /* This is tricky in React, so we rely on targeted hiding above */
+  /* Ensure all content inside printable containers is visible */
+  .bill-preview *, .print-report * {
+    display: initial !important;
+  }
+  .bill-preview div, .print-report div { display: block !important; }
+  .bill-preview p, .print-report p { display: block !important; }
+  .bill-preview h1, .print-report h1 { display: block !important; }
+  .bill-preview h2, .print-report h2 { display: block !important; }
+  .bill-preview table, .print-report table { display: table !important; }
+  .bill-preview tr, .print-report tr { display: table-row !important; }
+  .bill-preview th, .print-report th, .bill-preview td, .print-report td { display: table-cell !important; }
 
   /* Universal high-contrast for text */
   h1, h2, h3, p, span, td, th {
@@ -108,6 +124,10 @@
 
   --radius: 14px;
   --shadow: 0 4px 20px rgba(46,157,200,0.12);
+}
+
+.print-report {
+  display: none;
 }
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }

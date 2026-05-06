@@ -128,7 +128,7 @@ export default function Billing() {
 
       {bill ? (
         <div>
-          <div style={{ display: 'flex', gap: 12, marginBottom: 20, flexWrap: 'wrap' }}>
+          <div className="no-print" style={{ display: 'flex', gap: 12, marginBottom: 20, flexWrap: 'wrap' }}>
             <button className="btn btn-primary" onClick={handlePrint}><Printer size={16} /> Print Bill</button>
             <button className="btn btn-success" onClick={saveAsPDF} disabled={saving}>
               <Download size={16} /> {saving ? 'Saving...' : 'Save PDF'}

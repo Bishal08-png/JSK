@@ -472,7 +472,7 @@ export default function SalesHistory() {
       )}
 
       {/* Page heading */}
-      <div style={{ marginBottom: 24, display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
+      <div className="no-print" style={{ marginBottom: 24, display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
         <div>
           <h2 style={{ fontSize: 22, fontWeight: 800 }}>Sales History</h2>
           <p style={{ color: 'var(--text-muted)', fontSize: 13 }}>Filter by date or switch to day-wise view.</p>
@@ -509,7 +509,7 @@ export default function SalesHistory() {
 
       {/* Filters – only shown in list mode */}
       {viewMode === 'list' && (
-        <div className="card" style={{ marginBottom: 20 }}>
+        <div className="card no-print" style={{ marginBottom: 20 }}>
           <div style={{ display: 'flex', gap: 12, alignItems: 'flex-end', flexWrap: 'wrap' }}>
             <div className="form-group" style={{ marginBottom: 0, flex: 1, minWidth: 200 }}>
               <label className="form-label">Filter by Date</label>
@@ -563,7 +563,7 @@ export default function SalesHistory() {
         <>
           {/* Summary cards */}
           {(bills.length > 0 || date) && (
-            <div className="grid grid-2" style={{ marginBottom: 20 }}>
+            <div className="grid grid-2 no-print" style={{ marginBottom: 20 }}>
               <div className="stat-card" style={{ '--glow-color': 'rgba(139,92,246,0.15)' }}>
                 <div className="stat-label">
                   {date ? 'Bills on This Day' : 'Total Bills'}
@@ -580,7 +580,7 @@ export default function SalesHistory() {
           )}
 
           {/* Bills list */}
-          <div className="card">
+          <div className="card no-print">
             <h3 style={{ fontSize: 15, fontWeight: 700, marginBottom: 16 }}>
               {date
                 ? `Bills on ${new Date(date + 'T00:00:00').toLocaleDateString('en-IN', { day: '2-digit', month: 'long', year: 'numeric' })}`
@@ -609,7 +609,7 @@ export default function SalesHistory() {
             const allDiscount = daywise.reduce((s, g) => s + g.totalDiscount, 0)
             const allBills    = daywise.reduce((s, g) => s + g.totalBills,    0)
             return (
-              <div className="grid grid-2" style={{ marginBottom: 20 }}>
+              <div className="grid grid-2 no-print" style={{ marginBottom: 20 }}>
                 <div className="stat-card" style={{ '--glow-color': 'rgba(139,92,246,0.15)' }}>
                   <div className="stat-label">Total Bills (All Time)</div>
                   <div className="stat-value" style={{ color: 'var(--primary-light)' }}>{allBills}</div>
@@ -622,7 +622,7 @@ export default function SalesHistory() {
             )
           })()}
 
-          <div className="card">
+          <div className="card no-print">
             <h3 style={{ fontSize: 15, fontWeight: 700, marginBottom: 16 }}>Day-Wise Sales Breakdown</h3>
             {loading ? (
               <p style={{ color: 'var(--text-muted)', textAlign: 'center', padding: '32px 0' }}>Loading…</p>
@@ -692,7 +692,7 @@ export default function SalesHistory() {
       )}
       {/* ── Hidden Printable Report ────────────────── */}
       {reportData && (
-        <div className="print-report" style={{ display: 'none' }}>
+        <div className="print-report">
           <div style={{ borderBottom: '2px solid #4c1d95', paddingBottom: 10, marginBottom: 14, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
             <div>
               <h1 style={{ margin: 0, color: '#4c1d95', fontSize: '21px', fontWeight: 800 }}>{business.name.toUpperCase()}</h1>
