@@ -47,17 +47,19 @@ router.get("/", protect, async (req, res) => {
 // POST /api/products
 router.post("/", protect, adminOnly, async (req, res) => {
   try {
-    const { name, quantity, mrp, discountPercent, buyingPrice } = req.body;
+    const { name, quantity, mrp, discountPercent, buyingPrice, productType } = req.body;
+    const isService = productType === 'service';
+    
     if (
       !name ||
-      quantity === undefined ||
+      (!isService && quantity === undefined) ||
       !mrp ||
-      discountPercent === undefined
+      (!isService && discountPercent === undefined)
     )
       return res.status(400).json({ message: "All fields are required" });
 
     const mrpNum = Number(mrp);
-    const discNum = Number(discountPercent);
+    const discNum = isService ? 0 : Number(discountPercent || 0);
 
     // Backend Calculation (Secure Method)
     const calculatedFinalPrice = parseFloat(
@@ -66,11 +68,12 @@ router.post("/", protect, adminOnly, async (req, res) => {
 
     const product = await Product.create({
       name,
-      quantity: Number(quantity),
+      quantity: isService ? 0 : Number(quantity),
       mrp: mrpNum,
-      buyingPrice: Number(buyingPrice || 0),
+      buyingPrice: isService ? 0 : Number(buyingPrice || 0),
       discountPercent: discNum,
       finalPrice: calculatedFinalPrice,
+      productType: productType || 'product',
       createdBy: req.user._id, // Strictly isolate to creator
     });
     res.status(201).json(product);
@@ -110,6 +113,7 @@ router.put("/:id", protect, adminOnly, async (req, res) => {
     if (discountPercent !== undefined)
       product.discountPercent = Number(discountPercent);
     if (buyingPrice !== undefined) product.buyingPrice = Number(buyingPrice);
+    if (req.body.productType !== undefined) product.productType = req.body.productType;
 
     // Recalculate finalPrice server-side
     product.finalPrice = parseFloat(

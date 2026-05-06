@@ -7,6 +7,7 @@ const productSchema = new mongoose.Schema({
   buyingPrice: { type: Number, default: 0, min: 0 },
   discountPercent: { type: Number, required: true, min: 0, max: 100 },
   finalPrice: { type: Number, required: true },
+  productType: { type: String, enum: ['product', 'service'], default: 'product' },
   dateAdded: { type: Date, default: Date.now },
   isActive: { type: Boolean, default: true },
   createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }

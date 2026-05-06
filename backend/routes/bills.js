@@ -34,7 +34,9 @@ router.post("/", protect, adminOnly, async (req, res) => {
         return res
           .status(404)
           .json({ message: `Product not found: ${item.productId}` });
-      if (product.quantity < item.quantity)
+      
+      // Only check stock for physical products
+      if (product.productType !== 'service' && product.quantity < item.quantity)
         return res
           .status(400)
           .json({ message: `Insufficient stock for "${product.name}"` });
@@ -56,9 +58,11 @@ router.post("/", protect, adminOnly, async (req, res) => {
         itemTotal,
       });
 
-      // Deduct stock
-      product.quantity -= item.quantity;
-      await product.save();
+      // Deduct stock only for physical products
+      if (product.productType !== 'service') {
+        product.quantity -= item.quantity;
+        await product.save();
+      }
     }
 
     // Prefix logic based on isMainAdmin (already calculated above)
@@ -278,11 +282,13 @@ router.patch("/:id", protect, adminOnly, async (req, res) => {
     if (!items || items.length === 0)
       return res.status(400).json({ message: "No items provided" });
 
-    // Restore old stock first
+    // Restore old stock first (only for physical products)
     for (const oldItem of bill.items) {
-      await Product.findByIdAndUpdate(oldItem.productId, {
-        $inc: { quantity: oldItem.quantity },
-      });
+      const prod = await Product.findById(oldItem.productId);
+      if (prod && prod.productType !== 'service') {
+        prod.quantity += oldItem.quantity;
+        await prod.save();
+      }
     }
 
     // Recalculate with new items
@@ -299,7 +305,9 @@ router.patch("/:id", protect, adminOnly, async (req, res) => {
         return res
           .status(404)
           .json({ message: `Product not found: ${item.productId}` });
-      if (product.quantity < item.quantity)
+      
+      // Only check stock for physical products
+      if (product.productType !== 'service' && product.quantity < item.quantity)
         return res
           .status(400)
           .json({ message: `Insufficient stock for "${product.name}"` });
@@ -321,9 +329,11 @@ router.patch("/:id", protect, adminOnly, async (req, res) => {
         itemTotal,
       });
 
-      // Deduct new stock
-      product.quantity -= item.quantity;
-      await product.save();
+      // Deduct new stock only for physical products
+      if (product.productType !== 'service') {
+        product.quantity -= item.quantity;
+        await product.save();
+      }
     }
 
     const grandTotal = parseFloat((subtotal - totalDiscount).toFixed(2));
@@ -360,11 +370,13 @@ router.delete("/:id", protect, adminOnly, async (req, res) => {
     });
     if (!bill) return res.status(404).json({ message: "Bill not found" });
 
-    // Restore stock for each item
+    // Restore stock for each item (only for physical products)
     for (const item of bill.items) {
-      await Product.findByIdAndUpdate(item.productId, {
-        $inc: { quantity: item.quantity },
-      });
+      const prod = await Product.findById(item.productId);
+      if (prod && prod.productType !== 'service') {
+        prod.quantity += item.quantity;
+        await prod.save();
+      }
     }
 
     await bill.deleteOne();
