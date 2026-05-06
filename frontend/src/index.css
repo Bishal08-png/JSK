@@ -14,7 +14,7 @@
   }
 
   /* Hide specific UI layout components */
-  .no-print, .sidebar, .topbar, .app-footer, .hamburger, .sidebar-overlay, .tabs, button, .btn, .search-bar, .form-group {
+  .no-print, .sidebar, .topbar, .app-footer, .hamburger, .sidebar-overlay, .tabs, button, .btn, .search-bar, .form-group, div[role="status"], .toaster-container {
     display: none !important;
   }
 
