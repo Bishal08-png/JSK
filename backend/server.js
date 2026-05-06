@@ -70,7 +70,7 @@ const PORT = process.env.PORT || 5000
 module.exports = app
 
 if (process.env.NODE_ENV !== 'production') {
-  connectDB()
+  dbConnect()
     .then(async () => {
       console.log('MongoDB Atlas connected')
       app.listen(PORT, () => console.log(`Lokenath Enterprise server running on http://localhost:${PORT}`))
