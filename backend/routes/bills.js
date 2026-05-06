@@ -1,6 +1,7 @@
 const express = require("express");
 const Bill = require("../models/Bill");
 const Product = require("../models/Product");
+const User = require("../models/User");
 const { protect, adminOnly } = require("../middleware/auth");
 const router = express.Router();
 
@@ -15,13 +16,13 @@ router.post("/", protect, adminOnly, async (req, res) => {
       totalDiscount = 0;
     const billItems = [];
 
-    // Get main admin
-    const User = require("../models/User");
+    // Identify main admin
     const mainAdminEmail = (process.env.ADMIN_EMAIL || "admin@jsk.com").toLowerCase();
     let mainAdmin = await User.findOne({ email: mainAdminEmail });
     if (!mainAdmin) {
       mainAdmin = await User.findOne({ role: "admin" }).sort({ createdAt: 1 });
     }
+    const isMainAdmin = req.user._id.toString() === mainAdmin?._id.toString();
     const mainAdminId = mainAdmin ? mainAdmin._id : req.user._id;
 
     for (const item of items) {
@@ -60,12 +61,7 @@ router.post("/", protect, adminOnly, async (req, res) => {
       await product.save();
     }
 
-    // Identify main admin
-    const mainAdminEmail = (process.env.ADMIN_EMAIL || "admin@jsk.com").toLowerCase();
-    const isMainAdmin = req.user.email.toLowerCase() === mainAdminEmail;
-
-    // Generate sequential bill number
-    // Main admin uses 'LK-' prefix, others use 'DM-'
+    // Prefix logic based on isMainAdmin (already calculated above)
     const prefix = isMainAdmin ? "LK-" : "DM-";
 
     const regex = new RegExp(`^${prefix}`);
@@ -118,7 +114,11 @@ router.get("/", protect, adminOnly, async (req, res) => {
 
     // Identify main admin
     const mainAdminEmail = (process.env.ADMIN_EMAIL || "admin@jsk.com").toLowerCase();
-    const isMainAdmin = req.user.email.toLowerCase() === mainAdminEmail;
+    let mainAdmin = await User.findOne({ email: mainAdminEmail });
+    if (!mainAdmin) {
+      mainAdmin = await User.findOne({ role: "admin" }).sort({ createdAt: 1 });
+    }
+    const isMainAdmin = req.user._id.toString() === mainAdmin?._id.toString();
 
     // Main admin sees own + legacy, others only own
     const filter = isMainAdmin 
@@ -151,7 +151,11 @@ router.get("/stats", protect, adminOnly, async (req, res) => {
   try {
     // Identify main admin
     const mainAdminEmail = (process.env.ADMIN_EMAIL || "admin@jsk.com").toLowerCase();
-    const isMainAdmin = req.user.email.toLowerCase() === mainAdminEmail;
+    let mainAdmin = await User.findOne({ email: mainAdminEmail });
+    if (!mainAdmin) {
+      mainAdmin = await User.findOne({ role: "admin" }).sort({ createdAt: 1 });
+    }
+    const isMainAdmin = req.user._id.toString() === mainAdmin?._id.toString();
 
     const queryFilter = isMainAdmin
       ? {
@@ -210,7 +214,11 @@ router.get("/daywise", protect, adminOnly, async (req, res) => {
   try {
     // Identify main admin
     const mainAdminEmail = (process.env.ADMIN_EMAIL || "admin@jsk.com").toLowerCase();
-    const isMainAdmin = req.user.email.toLowerCase() === mainAdminEmail;
+    let mainAdmin = await User.findOne({ email: mainAdminEmail });
+    if (!mainAdmin) {
+      mainAdmin = await User.findOne({ role: "admin" }).sort({ createdAt: 1 });
+    }
+    const isMainAdmin = req.user._id.toString() === mainAdmin?._id.toString();
 
     const aggregateFilter = isMainAdmin
       ? {
@@ -261,7 +269,11 @@ router.patch("/:id", protect, adminOnly, async (req, res) => {
   try {
     // Identify main admin
     const mainAdminEmail = (process.env.ADMIN_EMAIL || "admin@jsk.com").toLowerCase();
-    const isMainAdmin = req.user.email.toLowerCase() === mainAdminEmail;
+    let mainAdmin = await User.findOne({ email: mainAdminEmail });
+    if (!mainAdmin) {
+      mainAdmin = await User.findOne({ role: "admin" }).sort({ createdAt: 1 });
+    }
+    const isMainAdmin = req.user._id.toString() === mainAdmin?._id.toString();
 
     const bill = await Bill.findOne({
       _id: req.params.id,
@@ -343,7 +355,11 @@ router.delete("/:id", protect, adminOnly, async (req, res) => {
   try {
     // Identify main admin
     const mainAdminEmail = (process.env.ADMIN_EMAIL || "admin@jsk.com").toLowerCase();
-    const isMainAdmin = req.user.email.toLowerCase() === mainAdminEmail;
+    let mainAdmin = await User.findOne({ email: mainAdminEmail });
+    if (!mainAdmin) {
+      mainAdmin = await User.findOne({ role: "admin" }).sort({ createdAt: 1 });
+    }
+    const isMainAdmin = req.user._id.toString() === mainAdmin?._id.toString();
 
     const bill = await Bill.findOne({
       _id: req.params.id,
