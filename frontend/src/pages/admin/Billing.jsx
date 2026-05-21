@@ -50,7 +50,12 @@ export default function Billing() {
   const updateQty = (id, val) => {
     const item = cart.find(i => i.productId === id)
     const n = parseInt(val)
-    if (isNaN(n) || n < 1) return removeFromCart(id)
+    // Allow 0 or blank (NaN) — keep item visible but block bill generation
+    if (isNaN(n) || n < 0) {
+      // Set qty to 0 so the item remains in cart but shows as invalid
+      setCart(prev => prev.map(i => i.productId === id ? { ...i, qty: 0 } : i))
+      return
+    }
     if (item.productType !== 'service' && n > item.maxQty) return toast.error('Exceeds available stock')
     setCart(prev => prev.map(i => i.productId === id ? { ...i, qty: n } : i))
   }
@@ -70,8 +75,11 @@ export default function Billing() {
   
   const grandTotal = subtotal - discount
 
+  const hasZeroQty = cart.some(i => i.qty <= 0)
+
   const handleCheckout = async () => {
     if (cart.length === 0) return toast.error('Cart is empty')
+    if (hasZeroQty) return toast.error('Some items have 0 quantity. Please fix or remove them.')
     setLoading(true)
     try {
       const { data } = await api.post('/bills', {
@@ -263,17 +271,15 @@ export default function Billing() {
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                           <button className="btn btn-secondary btn-sm" style={{ padding: '4px 9px' }} onClick={() => updateQty(item.productId, item.qty - 1)}><Minus size={12} /></button>
-                          <input type="number" min="1" max={item.maxQty} value={item.qty} onChange={e => updateQty(item.productId, e.target.value)}
-                            style={{ width: 55, textAlign: 'center', background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 7, color: 'var(--text)', padding: '4px', fontSize: 13 }} />
+                          <input type="number" min="0" max={item.maxQty} value={item.qty === 0 ? '' : item.qty} onChange={e => updateQty(item.productId, e.target.value)}
+                            style={{ width: 55, textAlign: 'center', background: 'var(--bg-card)', border: `1px solid ${item.qty <= 0 ? 'var(--danger)' : 'var(--border)'}`, borderRadius: 7, color: item.qty <= 0 ? 'var(--danger)' : 'var(--text)', padding: '4px', fontSize: 13 }} />
                           <button className="btn btn-secondary btn-sm" style={{ padding: '4px 9px' }} onClick={() => updateQty(item.productId, item.qty + 1)}><Plus size={12} /></button>
                         </div>
-                        <span style={{ color: 'var(--primary-dark)', fontWeight: 700, fontSize: 14 }}>₹{(item.finalPrice * item.qty).toFixed(2)}</span>
+                        <span style={{ color: item.qty <= 0 ? 'var(--danger)' : 'var(--primary-dark)', fontWeight: 700, fontSize: 14 }}>₹{(item.finalPrice * item.qty).toFixed(2)}</span>
                       </div>
-                      {item.productType === 'service' && (
-                        <div style={{ fontSize:10, color:'var(--text-muted)', marginTop:4, textAlign:'right' }}>
-                          Unit Price: ₹{item.mrp.toFixed(2)}
-                        </div>
-                      )}
+                      <div style={{ fontSize:10, color:'var(--text-muted)', marginTop:4, textAlign:'right' }}>
+                        Unit Price: ₹{item.productType === 'service' ? item.mrp.toFixed(2) : item.finalPrice.toFixed(2)}
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -288,8 +294,14 @@ export default function Billing() {
                     <span>Grand Total</span><span>₹{grandTotal.toFixed(2)}</span>
                   </div>
                 </div>
-                <button className="btn btn-success btn-full" style={{ marginTop: 16 }} onClick={handleCheckout} disabled={loading}>
-                  {loading ? 'Processing...' : '✅ Generate Bill'}
+                <button
+                  className="btn btn-success btn-full"
+                  style={{ marginTop: 16, opacity: hasZeroQty ? 0.5 : 1, cursor: hasZeroQty ? 'not-allowed' : 'pointer' }}
+                  onClick={handleCheckout}
+                  disabled={loading || hasZeroQty}
+                  title={hasZeroQty ? 'Fix items with 0 quantity before generating bill' : ''}
+                >
+                  {loading ? 'Processing...' : hasZeroQty ? '⚠️ Fix Quantities First' : '✅ Generate Bill'}
                 </button>
               </>
             )}
