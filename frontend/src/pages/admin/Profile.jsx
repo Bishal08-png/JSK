@@ -85,14 +85,30 @@ export default function Profile() {
   const handleFileUpload = (e) => {
     const file = e.target.files[0]
     if (!file) return
-    if (file.size > 3 * 1024 * 1024) {
-      toast.error('Image size must be less than 3MB')
-      return
-    }
+
     const reader = new FileReader()
-    reader.onloadend = () => {
-      setDpInput(reader.result)
-      toast.success('Photo loaded into preview. Click "Save Display Picture" to apply.')
+    reader.onload = (event) => {
+      const img = new Image()
+      img.onload = () => {
+        const canvas = document.createElement('canvas')
+        const maxDim = 400
+        canvas.width = maxDim
+        canvas.height = maxDim
+        const ctx = canvas.getContext('2d')
+
+        // Center-crop to square
+        const minDim = Math.min(img.width, img.height)
+        const sx = (img.width - minDim) / 2
+        const sy = (img.height - minDim) / 2
+
+        ctx.drawImage(img, sx, sy, minDim, minDim, 0, 0, maxDim, maxDim)
+        const resizedDataUrl = canvas.toDataURL('image/jpeg', 0.85)
+
+        setDpInput(resizedDataUrl)
+        toast.success('Photo ready in preview! Click "Save Display Picture" to apply.')
+      }
+      img.onerror = () => toast.error('Invalid or unreadable image file')
+      img.src = event.target.result
     }
     reader.readAsDataURL(file)
   }
