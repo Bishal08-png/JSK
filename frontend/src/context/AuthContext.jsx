@@ -1,10 +1,24 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { AuthContext } from './auth-context'
+import api from '../api/axios'
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(() => {
     try { return JSON.parse(localStorage.getItem('jsk_user')) } catch { return null }
   })
+
+  useEffect(() => {
+    if (user?.token) {
+      api.get('/auth/me')
+        .then(({ data }) => {
+          if (data && data._id) {
+            localStorage.setItem('jsk_user', JSON.stringify(data))
+            setUser(data)
+          }
+        })
+        .catch(() => {})
+    }
+  }, [])
 
   const login = (userData) => {
     localStorage.setItem('jsk_user', JSON.stringify(userData))

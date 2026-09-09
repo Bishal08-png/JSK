@@ -16,6 +16,7 @@ const toAuthResponse = (user) => ({
   name: user.name,
   email: user.email,
   role: user.role,
+  dp: user.dp || '',
   token: generateToken(user._id)
 })
 
@@ -119,6 +120,51 @@ router.put('/admin/profile', protect, adminOnly, async (req, res) => {
     await user.save()
 
     res.json(toAuthResponse(user))
+  } catch (err) {
+    res.status(500).json({ message: err.message })
+  }
+})
+
+// GET /api/auth/me
+router.get('/me', protect, async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id)
+    if (!user) return res.status(404).json({ message: 'User not found' })
+    res.json(toAuthResponse(user))
+  } catch (err) {
+    res.status(500).json({ message: err.message })
+  }
+})
+
+// PUT /api/auth/admin/dp
+router.put('/admin/dp', protect, adminOnly, async (req, res) => {
+  try {
+    const { dp, targetAdminId, targetEmail } = req.body
+    if (dp === undefined || dp === null) {
+      return res.status(400).json({ message: 'Display picture (dp) URL or image string is required' })
+    }
+
+    let targetUser = req.user
+
+    // If targeting another admin specified by ID or Email
+    if (targetAdminId || targetEmail) {
+      const query = targetAdminId ? { _id: targetAdminId } : { email: targetEmail.toLowerCase().trim() }
+      targetUser = await User.findOne(query)
+      if (!targetUser) {
+        return res.status(404).json({ message: 'Target admin account not found' })
+      }
+      if (targetUser.role !== 'admin') {
+        return res.status(403).json({ message: 'Target user is not an admin' })
+      }
+    }
+
+    targetUser.dp = dp.trim()
+    await targetUser.save()
+
+    res.json({
+      message: 'Admin display picture updated successfully',
+      user: toAuthResponse(targetUser)
+    })
   } catch (err) {
     res.status(500).json({ message: err.message })
   }

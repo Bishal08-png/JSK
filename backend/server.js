@@ -51,7 +51,7 @@ const seedAdmin = async () => {
     console.log(`Default admin seeded: ${adminEmail}`)
   }
 
-  // Demo Admin
+  // Demo Admin 1
   const demoEmail = 'bishal8@gmail.com'
   const existingDemo = await User.findOne({ email: demoEmail.toLowerCase(), role: 'admin' })
   if (!existingDemo) {
@@ -62,6 +62,19 @@ const seedAdmin = async () => {
       role: 'admin'
     })
     console.log(`Demo admin seeded: ${demoEmail}`)
+  }
+
+  // Demo Admin 2
+  const demo2Email = 'bishal@jsk.com'
+  const existingDemo2 = await User.findOne({ email: demo2Email.toLowerCase(), role: 'admin' })
+  if (!existingDemo2) {
+    await User.create({
+      name: 'Demo Admin 2',
+      email: demo2Email,
+      password: 'bjp207',
+      role: 'admin'
+    })
+    console.log(`Demo admin 2 seeded: ${demo2Email}`)
   }
 }
 

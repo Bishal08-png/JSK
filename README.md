@@ -9,15 +9,23 @@ The app supports customer browsing, admin inventory control, billing/POS workflo
 - Customer signup and login
 - Admin login and protected admin routes
 - Admin dashboard with sales statistics
-- Product inventory add, edit, search, and soft delete
+- Product and service inventory with separate tabs (Physical Products / Shop Services)
+- Buying price tracking per product (toggle show/hide in inventory)
+- Product type support: `product` (tracked stock) and `service` (no stock deduction)
 - Billing/POS cart for creating customer bills
-- Automatic stock deduction when a bill is generated
+- Automatic stock deduction for physical products when a bill is generated
+- Services are billed without stock checks or deductions
+- Bill edit (exchange/update) — admin can modify items and quantities on existing bills with automatic stock correction
 - Bill PDF download
 - Sales history list with date filter
 - Day-wise sales breakdown
-- Daily sales report PDF download
-- Bill deletion with automatic stock restore
+- Daily sales report — print via browser native print engine or download as PDF
+- Bill deletion with automatic stock restore (physical products only)
 - Customer product catalog with cart estimate
+- Admin profile page — view account info and revenue summary
+- Admin password change (requires current password verification)
+- Admin name and email update
+- Multi-tenant data isolation — main admin (`LK-` prefix) and demo admin (`DM-` prefix) maintain separate bill sequences and sales histories
 - Krishna image branding for admin logo/profile areas
 
 ## Tech Stack
@@ -213,15 +221,20 @@ Fields:
 - `name`
 - `quantity`
 - `mrp`
+- `buyingPrice` (optional, for margin tracking)
 - `discountPercent`
 - `finalPrice`
+- `productType` (`product` or `service`)
 - `dateAdded`
 - `isActive`
+- `createdBy`
 
 Important behavior:
 
-- `finalPrice` is calculated before saving.
+- `finalPrice` is calculated server-side before saving.
 - Products are soft deleted by setting `isActive` to `false`.
+- `productType: 'service'` items have no quantity and are never deducted from stock.
+- `createdBy` links each product to the admin who added it for multi-tenant isolation.
 
 ### `backend/models/Bill.js`
 
@@ -247,11 +260,17 @@ Auth routes.
 ```txt
 POST /api/auth/register
 POST /api/auth/login
+PUT  /api/auth/admin/password
+PUT  /api/auth/admin/profile
 ```
 
 `register` creates a customer account and returns a JWT.
 
 `login` validates credentials and returns user data plus a JWT.
+
+`PUT /api/auth/admin/password` allows the logged-in admin to change their password after verifying the current one.
+
+`PUT /api/auth/admin/profile` allows the logged-in admin to update their name and email.
 
 ### `backend/routes/products.js`
 
@@ -283,6 +302,7 @@ POST   /api/bills
 GET    /api/bills
 GET    /api/bills/stats
 GET    /api/bills/daywise
+PATCH  /api/bills/:id
 DELETE /api/bills/:id
 ```
 
@@ -292,11 +312,14 @@ Access:
 
 Important behavior:
 
-- Creating a bill checks product stock.
-- Creating a bill deducts stock.
-- Deleting a bill restores stock.
+- Creating a bill checks product stock (physical products only).
+- Creating a bill deducts stock (physical products only; services are skipped).
+- Bill numbers are prefixed: `LK-` for main admin, `DM-` for demo admin.
+- `PATCH /api/bills/:id` allows editing an existing bill — restores old stock, recalculates totals with new items, and deducts new stock.
+- Deleting a bill restores stock for physical product items only.
 - Date filtering uses the selected day's start and end time.
 - Day-wise route groups bills by year/month/day.
+- Each endpoint filters results by admin account for data isolation.
 
 ### `backend/db/fileDB.js` and `backend/db/db.json`
 
@@ -519,14 +542,14 @@ DELETE /api/products/:id
 
 Features:
 
-- Add product
-- Edit product
-- Delete product
-- Product search
-- Stock badges
-- MRP display
-- Discount display
-- Final price preview
+- Tabbed interface: **Physical Products** and **Shop Services**
+- Add, edit, and delete products or services
+- Product search filtered by active tab
+- Stock badges (green / warning / red based on quantity)
+- MRP, discount %, and calculated final price display
+- Buying price field with show/hide toggle (admin-only visibility)
+- Services have no quantity or discount fields — price per unit only
+- Live final price preview while filling the form
 
 Security note:
 
@@ -579,25 +602,26 @@ Calls:
 GET    /api/bills
 GET    /api/bills?date=YYYY-MM-DD
 GET    /api/bills/daywise
+PATCH  /api/bills/:id
 DELETE /api/bills/:id
 ```
 
 Features:
 
-- List all bills
+- List all bills (scoped to current admin)
 - Filter by date
-- Day-wise sales view
-- Expand bill details
-- Delete bill
-- Stock restore after deletion
-- Download daily sales report PDF
+- Day-wise sales view with expandable daily groups
+- Expand bill details (per-item breakdown with MRP, discount, final price)
+- **Edit bill** — inline modal to change customer name, swap or adjust product quantities; stock is automatically corrected on save
+- Delete bill with confirmation modal; stock restored for physical products
+- **Print Report** — triggers browser native print for the selected date's sales
+- **Save PDF** — generates a high-resolution A4 PDF report using `html2canvas` and `jsPDF`
 
-Daily report PDF:
+Daily report includes:
 
-- Creates a hidden report container in the DOM.
-- Uses compact table styling.
-- Converts the report to canvas.
-- Saves it as a PDF.
+- Shop header with business name and address
+- Summary stats: day total revenue, total bills, total discount
+- Full bill table with bill ID, customer, time, items, and amount
 
 ### `frontend/src/pages/customer/ProductCatalog.jsx`
 
@@ -625,6 +649,25 @@ Important:
 - Customer cart is only a price estimate.
 - It does not create a real bill or deduct stock.
 - Real billing is done by admin in Billing/POS.
+
+### `frontend/src/pages/admin/Profile.jsx`
+
+Admin profile and account management page.
+
+Features:
+
+- View signed-in admin name, email, and role
+- **Revenue reveal** — total revenue hidden by default; admin clicks to load and show it, can hide again
+- **Change Password** form — current password required; new password must be at least 6 characters
+- **Change Name & Email** form — updates admin profile details and refreshes auth context and `localStorage`
+
+New route:
+
+```txt
+/admin/profile
+```
+
+---
 
 ## Key User Flows
 
@@ -682,11 +725,16 @@ http://localhost:5000
 
 ## Recent Work Completed
 
-- Fixed downloaded customer bill text color so product names and prices are visible.
+- Added **Services** support — shop services (e.g. Xerox, lamination) can now be added and billed without stock tracking.
+- Added **buying price** field on products with admin-only show/hide toggle.
+- Added **bill edit (exchange)** feature — admin can swap or adjust items on any existing bill with automatic stock correction.
+- Added **Admin Profile** page — account info, revenue reveal, change password, and change name/email.
+- Implemented **multi-tenant bill isolation** with separate `LK-` (main admin) and `DM-` (demo admin) bill number sequences.
+- Added **Print Report** using browser native print engine with `@media print` CSS for high-fidelity output.
+- Fixed downloaded customer bill text color so product names and prices are visible in PDF.
 - Made daily sales report PDF more compact.
 - Added Krishna image to JSK admin logo.
 - Added Krishna image to admin profile and topbar avatar.
-- Pushed those code changes to GitHub previously.
 
 ## GitHub
 

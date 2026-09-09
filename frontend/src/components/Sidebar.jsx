@@ -61,7 +61,7 @@ export default function Sidebar({ open, setOpen }) {
         <div className="sidebar-footer">
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12, padding: '8px 0' }}>
             <div className="avatar">
-              <img src={krishnaImageUrl} alt="Radha Krishna" />
+              <img src={user?.dp || krishnaImageUrl} alt={displayName} style={{ objectFit: 'cover', width: '100%', height: '100%' }} />
             </div>
             <div>
               <div style={{ fontSize: 13, fontWeight: 600 }}>{displayName}</div>

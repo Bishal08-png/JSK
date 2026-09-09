@@ -36,7 +36,7 @@ export default function Layout() {
           </div>
           <div className="topbar-user">
             <div className="avatar">
-              <img src={krishnaImageUrl} alt="Radha Krishna" />
+              <img src={user?.dp || krishnaImageUrl} alt={displayName} style={{ objectFit: 'cover', width: '100%', height: '100%' }} />
             </div>
             <div className="user-info" style={{ display: 'flex', flexDirection: 'column' }}>
               <span style={{ fontSize: 13, fontWeight: 600 }}>{displayName}</span>
