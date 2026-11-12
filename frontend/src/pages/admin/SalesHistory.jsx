@@ -330,64 +330,90 @@ export default function SalesHistory() {
       transition: 'box-shadow 0.2s',
     }}>
       {/* Header row */}
-      <div style={{
-        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        padding: '14px 16px',
-        background: expanded === b._id ? 'var(--bg-card2)' : 'var(--bg)',
-        flexWrap: 'wrap', gap: 8
-      }}>
-        {/* Left – clickable to expand */}
-        <div
-          style={{ display: 'flex', alignItems: 'center', gap: 12, flex: 1, cursor: 'pointer', minWidth: 0 }}
-          onClick={() => setExpanded(expanded === b._id ? null : b._id)}
-        >
-          <span className="badge badge-purple" style={{ flexShrink: 0 }}>{b.billNumber}</span>
-          <span style={{ fontWeight: 600, fontSize: 14, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-            {b.customerName}
-          </span>
-          <span style={{ color: 'var(--text-muted)', fontSize: 12, flexShrink: 0 }}>{b.items.length} item{b.items.length !== 1 ? 's' : ''}</span>
+      <div
+        style={{
+          padding: '12px 16px',
+          background: expanded === b._id ? 'var(--bg-card2)' : 'var(--bg)',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 8,
+          cursor: 'pointer',
+        }}
+        onClick={() => setExpanded(expanded === b._id ? null : b._id)}
+      >
+        {/* Top row: Bill # + Customer Name on left, Grand Total on right */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 0, flex: 1 }}>
+            <span className="badge badge-purple" style={{ flexShrink: 0, fontSize: 11, padding: '3px 8px' }}>
+              {b.billNumber}
+            </span>
+            <span style={{ fontWeight: 700, fontSize: 14, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', color: 'var(--text)' }}>
+              {b.customerName || 'Walk-in Customer'}
+            </span>
+          </div>
+          <div style={{ color: 'var(--accent)', fontWeight: 800, fontSize: 16, flexShrink: 0 }}>
+            {fmt(b.grandTotal)}
+          </div>
         </div>
 
-        {/* Right – amount + delete + chevron */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          <div style={{ textAlign: 'right', cursor: 'pointer' }} onClick={() => setExpanded(expanded === b._id ? null : b._id)}>
-            <div style={{ color: 'var(--accent)', fontWeight: 800, fontSize: 16 }}>{fmt(b.grandTotal)}</div>
-            <div style={{ color: 'var(--text-muted)', fontSize: 11 }}>{fmtDate(b.createdAt)} · {fmtTime(b.createdAt)}</div>
+        {/* Bottom row: Date & Time + Items on left, Actions on right */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap', fontSize: 12, color: 'var(--text-muted)' }}>
+            <span style={{ whiteSpace: 'nowrap' }}>{fmtDate(b.createdAt)}</span>
+            <span style={{ opacity: 0.5 }}>•</span>
+            <span style={{ whiteSpace: 'nowrap' }}>{fmtTime(b.createdAt)}</span>
+            <span style={{ opacity: 0.5 }}>•</span>
+            <span style={{
+              background: 'rgba(46,157,200,0.08)',
+              color: 'var(--primary-dark)',
+              padding: '1px 7px',
+              borderRadius: 6,
+              fontSize: 11,
+              fontWeight: 600,
+              whiteSpace: 'nowrap'
+            }}>
+              {b.items.length} item{b.items.length !== 1 ? 's' : ''}
+            </span>
           </div>
 
-          {/* Edit button */}
-          <button
-            title="Edit this bill (exchange/price update)"
-            onClick={(e) => { e.stopPropagation(); setToEdit(b) }}
-            style={{
-              background: 'rgba(59,168,208,0.1)', border: '1px solid rgba(59,168,208,0.3)',
-              borderRadius: 8, padding: '6px 8px', cursor: 'pointer', color: 'var(--primary)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              transition: 'all 0.2s', flexShrink: 0
-            }}
-            onMouseEnter={e => { e.currentTarget.style.background = 'rgba(59,168,208,0.22)'; e.currentTarget.style.borderColor = 'var(--primary)' }}
-            onMouseLeave={e => { e.currentTarget.style.background = 'rgba(59,168,208,0.1)';  e.currentTarget.style.borderColor = 'rgba(59,168,208,0.3)' }}
-          >
-            <Pencil size={14} />
-          </button>
-          {/* Delete button */}
-          <button
-            title="Delete this bill"
-            onClick={(e) => { e.stopPropagation(); setToDelete(b) }}
-            style={{
-              background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.25)',
-              borderRadius: 8, padding: '6px 8px', cursor: 'pointer', color: '#ef4444',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              transition: 'all 0.2s', flexShrink: 0
-            }}
-            onMouseEnter={e => { e.currentTarget.style.background = 'rgba(239,68,68,0.2)'; e.currentTarget.style.borderColor = '#ef4444' }}
-            onMouseLeave={e => { e.currentTarget.style.background = 'rgba(239,68,68,0.08)'; e.currentTarget.style.borderColor = 'rgba(239,68,68,0.25)' }}
-          >
-            <Trash2 size={14} />
-          </button>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }} onClick={e => e.stopPropagation()}>
+            {/* Edit button */}
+            <button
+              title="Edit this bill (exchange/price update)"
+              onClick={(e) => { e.stopPropagation(); setToEdit(b) }}
+              style={{
+                background: 'rgba(59,168,208,0.1)', border: '1px solid rgba(59,168,208,0.3)',
+                borderRadius: 8, padding: '5px 8px', cursor: 'pointer', color: 'var(--primary)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                transition: 'all 0.2s', flexShrink: 0
+              }}
+              onMouseEnter={e => { e.currentTarget.style.background = 'rgba(59,168,208,0.22)'; e.currentTarget.style.borderColor = 'var(--primary)' }}
+              onMouseLeave={e => { e.currentTarget.style.background = 'rgba(59,168,208,0.1)';  e.currentTarget.style.borderColor = 'rgba(59,168,208,0.3)' }}
+            >
+              <Pencil size={13} />
+            </button>
+            {/* Delete button */}
+            <button
+              title="Delete this bill"
+              onClick={(e) => { e.stopPropagation(); setToDelete(b) }}
+              style={{
+                background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.25)',
+                borderRadius: 8, padding: '5px 8px', cursor: 'pointer', color: '#ef4444',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                transition: 'all 0.2s', flexShrink: 0
+              }}
+              onMouseEnter={e => { e.currentTarget.style.background = 'rgba(239,68,68,0.2)'; e.currentTarget.style.borderColor = '#ef4444' }}
+              onMouseLeave={e => { e.currentTarget.style.background = 'rgba(239,68,68,0.08)'; e.currentTarget.style.borderColor = 'rgba(239,68,68,0.25)' }}
+            >
+              <Trash2 size={13} />
+            </button>
 
-          <div style={{ cursor: 'pointer' }} onClick={() => setExpanded(expanded === b._id ? null : b._id)}>
-            {expanded === b._id ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+            <div
+              style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', padding: '2px', color: 'var(--text-muted)' }}
+              onClick={() => setExpanded(expanded === b._id ? null : b._id)}
+            >
+              {expanded === b._id ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+            </div>
           </div>
         </div>
       </div>

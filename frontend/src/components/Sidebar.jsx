@@ -3,7 +3,7 @@ import { useAuth } from '../context/useAuth'
 import toast from 'react-hot-toast'
 import {
   LayoutDashboard, Package, Receipt, History,
-  ShoppingBag, LogOut, UserRound
+  ShoppingBag, LogOut, UserRound, X
 } from 'lucide-react'
 import { business } from '../config/business'
 
@@ -30,13 +30,14 @@ export default function Sidebar({ open, setOpen }) {
   const customerLinks = [
     { to: '/products', icon: <ShoppingBag />, label: 'Product Catalog' },
   ]
-  const links = user?.role === 'admin' ? adminLinks : customerLinks
+  const isAdmin = user?.role?.toLowerCase() === 'admin'
+  const links = isAdmin ? adminLinks : customerLinks
 
   return (
     <>
       <div className={`sidebar-overlay ${open ? 'open' : ''}`} onClick={() => setOpen(false)} />
       <aside className={`sidebar ${open ? 'open' : ''}`}>
-        <div className="sidebar-logo">
+        <div className="sidebar-logo" style={{ position: 'relative' }}>
           <div className="logo-icon">
             <img src={krishnaImageUrl} alt="Radha Krishna" />
           </div>
@@ -44,6 +45,14 @@ export default function Sidebar({ open, setOpen }) {
             <div className="logo-text">{business.initials}</div>
             <div className="logo-sub">{business.name}</div>
           </div>
+          {/* Mobile close button */}
+          <button
+            className="sidebar-close-btn"
+            onClick={() => setOpen(false)}
+            aria-label="Close sidebar"
+          >
+            <X size={18} />
+          </button>
         </div>
 
         <nav className="sidebar-nav">

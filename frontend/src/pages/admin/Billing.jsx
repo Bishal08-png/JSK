@@ -1,10 +1,9 @@
-import { useEffect, useState, useRef } from 'react'
+import { useEffect, useState } from 'react'
 import api from '../../api/axios'
 import toast from 'react-hot-toast'
-import { Plus, Minus, Trash2, Download, Search, Printer } from 'lucide-react'
-import jsPDF from 'jspdf'
-import html2canvas from 'html2canvas'
+import { Plus, Minus, Trash2, Download, Search, Printer, FileText } from 'lucide-react'
 import { business } from '../../config/business'
+import { saveBillAsPDF, saveBillAsDOCX } from '../../utils/billExport'
 
 export default function Billing() {
   const [products, setProducts] = useState([])
@@ -14,7 +13,7 @@ export default function Billing() {
   const [loading, setLoading] = useState(false)
   const [bill, setBill] = useState(null)
   const [activeTab, setActiveTab] = useState('product') // 'product' or 'service'
-  const billRef = useRef()
+  const [mobilePanel, setMobilePanel] = useState('products') // 'products' or 'cart'
 
   useEffect(() => { api.get('/products').then(r => setProducts(r.data)) }, [])
 
@@ -101,26 +100,31 @@ export default function Billing() {
   }
 
   const [saving, setSaving] = useState(false)
+  const [savingDocx, setSavingDocx] = useState(false)
+
   const saveAsPDF = async () => {
-    if (!billRef.current) return
+    if (!bill) return
     setSaving(true)
     try {
-      const canvas = await html2canvas(billRef.current, { 
-        scale: 4, // High scale for crystal clear text
-        useCORS: true,
-        backgroundColor: '#ffffff'
-      })
-      const img = canvas.toDataURL('image/png')
-      const pdf = new jsPDF('p', 'mm', 'a5')
-      const w = pdf.internal.pageSize.getWidth()
-      const h = (canvas.height * w) / canvas.width
-      pdf.addImage(img, 'PNG', 0, 0, w, h)
-      pdf.save(`${bill?.billNumber || 'Bill'}.pdf`)
-      toast.success('PDF Saved!')
-    } catch (err) {
+      await saveBillAsPDF(bill, business)
+      toast.success('Editable PDF Saved!')
+    } catch {
       toast.error('Failed to save PDF')
     } finally {
       setSaving(false)
+    }
+  }
+
+  const saveAsDOCX = async () => {
+    if (!bill) return
+    setSavingDocx(true)
+    try {
+      await saveBillAsDOCX(bill, business)
+      toast.success('DOCX Saved!')
+    } catch {
+      toast.error('Failed to save DOCX')
+    } finally {
+      setSavingDocx(false)
     }
   }
 
@@ -138,12 +142,15 @@ export default function Billing() {
         <div>
           <div className="no-print" style={{ display: 'flex', gap: 12, marginBottom: 20, flexWrap: 'wrap' }}>
             <button className="btn btn-primary" onClick={handlePrint}><Printer size={16} /> Print Bill</button>
-            <button className="btn btn-success" onClick={saveAsPDF} disabled={saving}>
+            <button className="btn btn-success" onClick={saveAsPDF} disabled={saving || savingDocx}>
               <Download size={16} /> {saving ? 'Saving...' : 'Save PDF'}
+            </button>
+            <button className="btn btn-outline" onClick={saveAsDOCX} disabled={saving || savingDocx}>
+              <FileText size={16} /> {savingDocx ? 'Saving...' : 'Save DOCX'}
             </button>
             <button className="btn btn-secondary" onClick={() => setBill(null)}><Plus size={16} /> New Bill</button>
           </div>
-          <div ref={billRef} className="bill-preview" style={{ maxWidth: 480 }}>
+          <div className="bill-preview" style={{ maxWidth: 480 }}>
             <div className="bill-header">
               <h2>{business.initials}</h2>
               <p style={{ fontSize: 13, fontWeight: 700 }}>{business.name}</p>
@@ -177,137 +184,182 @@ export default function Billing() {
           </div>
         </div>
       ) : (
-        <div className="pos-grid">
-          {/* Product Selector */}
-          <div>
-            <div className="card" style={{ marginBottom: 16 }}>
-              <div className="form-group" style={{ marginBottom: 0 }}>
-                <label className="form-label">Customer Name</label>
-                <input className="form-control" placeholder="Walk-in Customer" value={customerName} onChange={e => setCustomerName(e.target.value)} />
-              </div>
-            </div>
-
-            <div className="card">
-              <div style={{ display:'flex', gap:10, marginBottom:16, borderBottom:'1px solid rgba(255,255,255,0.05)' }}>
-                <button 
-                  onClick={() => setActiveTab('product')}
-                  style={{ 
-                    padding:'8px 16px', 
-                    background:'none', 
-                    border:'none', 
-                    color: activeTab === 'product' ? 'var(--accent)' : 'var(--text-muted)',
-                    fontWeight: 600,
-                    cursor:'pointer',
-                    fontSize: 13,
-                    borderBottom: activeTab === 'product' ? '2px solid var(--accent)' : '2px solid transparent',
-                  }}
-                >
-                  📦 Products
-                </button>
-                <button 
-                  onClick={() => setActiveTab('service')}
-                  style={{ 
-                    padding:'8px 16px', 
-                    background:'none', 
-                    border:'none', 
-                    color: activeTab === 'service' ? 'var(--accent)' : 'var(--text-muted)',
-                    fontWeight: 600,
-                    cursor:'pointer',
-                    fontSize: 13,
-                    borderBottom: activeTab === 'service' ? '2px solid var(--accent)' : '2px solid transparent',
-                  }}
-                >
-                  ⚡ Services
-                </button>
-              </div>
-
-              <div className="search-bar" style={{ marginBottom: 14 }}>
-                <Search size={16} />
-                <input className="form-control" placeholder={`Search ${activeTab === 'product' ? 'products' : 'services'}...`} value={search} onChange={e => setSearch(e.target.value)} style={{ paddingLeft: 38 }} />
-              </div>
-
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 8, maxHeight: 420, overflowY: 'auto' }}>
-                {filtered.length === 0 ? (
-                  <p style={{ color: 'var(--text-muted)', fontSize: 13, textAlign: 'center', padding: '20px 0' }}>No {activeTab}s found.</p>
-                ) : filtered.map(p => (
-                  <div key={p._id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 14px', background: 'var(--bg)', borderRadius: 10, border: '1px solid var(--border)' }}>
-                    <div>
-                      <div style={{ fontWeight: 600, fontSize: 14 }}>{p.name}</div>
-                      <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>
-                        {activeTab === 'product' ? (
-                          `Stock: ${p.quantity} | MRP: ₹${p.mrp} | Final: `
-                        ) : (
-                          'Service | Price: '
-                        )}
-                        <span style={{ color: 'var(--primary-dark)', fontWeight: 700 }}>₹{activeTab === 'product' ? p.finalPrice : p.mrp}</span>
-                        {activeTab === 'service' && ' / unit'}
-                      </div>
-                    </div>
-                    <button className="btn btn-primary btn-sm" onClick={() => addToCart(p)}>
-                      <Plus size={14} /> Add
-                    </button>
-                  </div>
-                ))}
-              </div>
-            </div>
+        <div>
+          {/* Mobile: Panel switcher tabs */}
+          <div
+            className="mobile-pos-tabs"
+            style={{
+              gap: 0,
+              marginBottom: 16,
+              background: 'var(--bg-card2)',
+              borderRadius: 12,
+              padding: 4,
+            }}
+          >
+            <button
+              onClick={() => setMobilePanel('products')}
+              style={{
+                flex: 1, padding: '9px 12px', borderRadius: 9, border: 'none',
+                background: mobilePanel === 'products' ? '#fff' : 'transparent',
+                color: mobilePanel === 'products' ? 'var(--primary-dark)' : 'var(--text-muted)',
+                fontWeight: 700, fontSize: 13, cursor: 'pointer',
+                boxShadow: mobilePanel === 'products' ? '0 2px 8px rgba(0,0,0,0.1)' : 'none',
+                transition: 'all 0.2s'
+              }}
+            >
+              📦 Products
+            </button>
+            <button
+              onClick={() => setMobilePanel('cart')}
+              style={{
+                flex: 1, padding: '9px 12px', borderRadius: 9, border: 'none',
+                background: mobilePanel === 'cart' ? '#fff' : 'transparent',
+                color: mobilePanel === 'cart' ? 'var(--primary-dark)' : 'var(--text-muted)',
+                fontWeight: 700, fontSize: 13, cursor: 'pointer',
+                boxShadow: mobilePanel === 'cart' ? '0 2px 8px rgba(0,0,0,0.1)' : 'none',
+                transition: 'all 0.2s',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6
+              }}
+            >
+              🛒 Cart {cart.length > 0 && <span style={{ background: 'var(--primary)', color: '#fff', borderRadius: '50%', width: 20, height: 20, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 800 }}>{cart.length}</span>}
+            </button>
           </div>
 
-          {/* Cart + Bill */}
-          <div className="card" style={{ position: 'sticky', top: 80 }}>
-            <h3 style={{ fontSize: 15, fontWeight: 700, marginBottom: 14 }}>🛒 Cart</h3>
-            {cart.length === 0 ? (
-              <p style={{ color: 'var(--text-muted)', fontSize: 13, textAlign: 'center', padding: '32px 0' }}>Add items from the left panel.</p>
-            ) : (
-              <>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 16 }}>
-                  {cart.map(item => (
-                    <div key={item.productId} style={{ background: 'var(--bg)', borderRadius: 10, padding: '10px 12px', border: '1px solid var(--border)' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
-                        <span style={{ fontWeight: 600, fontSize: 13 }}>
-                          {item.productType === 'service' ? '⚡ ' : ''}{item.name}
-                        </span>
-                        <button onClick={() => removeFromCart(item.productId)} style={{ background: 'none', border: 'none', color: 'var(--danger)', cursor: 'pointer' }}><Trash2 size={14} /></button>
-                      </div>
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                          <button className="btn btn-secondary btn-sm" style={{ padding: '4px 9px' }} onClick={() => updateQty(item.productId, item.qty - 1)}><Minus size={12} /></button>
-                          <input type="number" min="0" max={item.maxQty} value={item.qty === 0 ? '' : item.qty} onChange={e => updateQty(item.productId, e.target.value)}
-                            style={{ width: 55, textAlign: 'center', background: 'var(--bg-card)', border: `1px solid ${item.qty <= 0 ? 'var(--danger)' : 'var(--border)'}`, borderRadius: 7, color: item.qty <= 0 ? 'var(--danger)' : 'var(--text)', padding: '4px', fontSize: 13 }} />
-                          <button className="btn btn-secondary btn-sm" style={{ padding: '4px 9px' }} onClick={() => updateQty(item.productId, item.qty + 1)}><Plus size={12} /></button>
+          <div className="pos-grid">
+            {/* Product Selector */}
+            <div className="pos-products-panel">
+              <div className="card" style={{ marginBottom: 16 }}>
+                <div className="form-group" style={{ marginBottom: 0 }}>
+                  <label className="form-label">Customer Name</label>
+                  <input className="form-control" placeholder="Walk-in Customer" value={customerName} onChange={e => setCustomerName(e.target.value)} />
+                </div>
+              </div>
+
+              <div className="card">
+                <div style={{ display:'flex', gap:10, marginBottom:16, borderBottom:'1px solid rgba(255,255,255,0.05)' }}>
+                  <button
+                    onClick={() => setActiveTab('product')}
+                    className="tab-btn"
+                    style={{
+                      padding:'8px 16px',
+                      background:'none',
+                      border:'none',
+                      color: activeTab === 'product' ? 'var(--accent)' : 'var(--text-muted)',
+                      fontWeight: 600,
+                      cursor:'pointer',
+                      fontSize: 13,
+                      borderBottom: activeTab === 'product' ? '2px solid var(--accent)' : '2px solid transparent',
+                    }}
+                  >
+                    📦 Products
+                  </button>
+                  <button
+                    onClick={() => setActiveTab('service')}
+                    className="tab-btn"
+                    style={{
+                      padding:'8px 16px',
+                      background:'none',
+                      border:'none',
+                      color: activeTab === 'service' ? 'var(--accent)' : 'var(--text-muted)',
+                      fontWeight: 600,
+                      cursor:'pointer',
+                      fontSize: 13,
+                      borderBottom: activeTab === 'service' ? '2px solid var(--accent)' : '2px solid transparent',
+                    }}
+                  >
+                    ⚡ Services
+                  </button>
+                </div>
+
+                <div className="search-bar" style={{ marginBottom: 14 }}>
+                  <Search size={16} />
+                  <input className="form-control" placeholder={`Search ${activeTab === 'product' ? 'products' : 'services'}...`} value={search} onChange={e => setSearch(e.target.value)} style={{ paddingLeft: 38 }} />
+                </div>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8, maxHeight: 420, overflowY: 'auto' }}>
+                  {filtered.length === 0 ? (
+                    <p style={{ color: 'var(--text-muted)', fontSize: 13, textAlign: 'center', padding: '20px 0' }}>No {activeTab}s found.</p>
+                  ) : filtered.map(p => (
+                    <div key={p._id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 14px', background: 'var(--bg)', borderRadius: 10, border: '1px solid var(--border)', gap: 8 }}>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontWeight: 600, fontSize: 14, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.name}</div>
+                        <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>
+                          {activeTab === 'product' ? (
+                            `Stock: ${p.quantity} | MRP: ₹${p.mrp} | Final: `
+                          ) : (
+                            'Service | Price: '
+                          )}
+                          <span style={{ color: 'var(--primary-dark)', fontWeight: 700 }}>₹{activeTab === 'product' ? p.finalPrice : p.mrp}</span>
+                          {activeTab === 'service' && ' / unit'}
                         </div>
-                        <span style={{ color: item.qty <= 0 ? 'var(--danger)' : 'var(--primary-dark)', fontWeight: 700, fontSize: 14 }}>₹{(item.finalPrice * item.qty).toFixed(2)}</span>
                       </div>
-                      <div style={{ fontSize:10, color:'var(--text-muted)', marginTop:4, textAlign:'right' }}>
-                        Unit Price: ₹{item.productType === 'service' ? item.mrp.toFixed(2) : item.finalPrice.toFixed(2)}
-                      </div>
+                      <button className="btn btn-primary btn-sm" onClick={() => { addToCart(p); setMobilePanel('cart') }} style={{ flexShrink: 0 }}>
+                        <Plus size={14} /> Add
+                      </button>
                     </div>
                   ))}
                 </div>
-                <div style={{ borderTop: '1px solid var(--border)', paddingTop: 14 }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, color: 'var(--text-muted)', marginBottom: 4 }}>
-                    <span>Subtotal</span><span>₹{subtotal.toFixed(2)}</span>
+              </div>
+            </div>
+
+            {/* Cart + Bill */}
+            <div className="card pos-cart-sticky" style={{ position: 'sticky', top: 80 }}>
+              <h3 style={{ fontSize: 15, fontWeight: 700, marginBottom: 14 }}>🛒 Cart {cart.length > 0 && <span style={{ marginLeft: 6, fontSize: 12, background: 'var(--primary)', color: '#fff', borderRadius: 20, padding: '2px 8px' }}>{cart.length}</span>}</h3>
+              {cart.length === 0 ? (
+                <p style={{ color: 'var(--text-muted)', fontSize: 13, textAlign: 'center', padding: '32px 0' }}>Add items from the left panel.</p>
+              ) : (
+                <>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 16 }}>
+                    {cart.map(item => (
+                      <div key={item.productId} style={{ background: 'var(--bg)', borderRadius: 10, padding: '10px 12px', border: '1px solid var(--border)' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+                          <span style={{ fontWeight: 600, fontSize: 13, flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', paddingRight: 8 }}>
+                            {item.productType === 'service' ? '⚡ ' : ''}{item.name}
+                          </span>
+                          <button onClick={() => removeFromCart(item.productId)} style={{ background: 'none', border: 'none', color: 'var(--danger)', cursor: 'pointer', flexShrink: 0 }}><Trash2 size={14} /></button>
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8 }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                            <button className="btn btn-secondary btn-sm" style={{ padding: '4px 9px' }} onClick={() => updateQty(item.productId, item.qty - 1)}><Minus size={12} /></button>
+                            <input type="number" min="0" max={item.maxQty} value={item.qty === 0 ? '' : item.qty} onChange={e => updateQty(item.productId, e.target.value)}
+                              style={{ width: 50, textAlign: 'center', background: 'var(--bg-card)', border: `1px solid ${item.qty <= 0 ? 'var(--danger)' : 'var(--border)'}`, borderRadius: 7, color: item.qty <= 0 ? 'var(--danger)' : 'var(--text)', padding: '4px', fontSize: 13 }} />
+                            <button className="btn btn-secondary btn-sm" style={{ padding: '4px 9px' }} onClick={() => updateQty(item.productId, item.qty + 1)}><Plus size={12} /></button>
+                          </div>
+                          <span style={{ color: item.qty <= 0 ? 'var(--danger)' : 'var(--primary-dark)', fontWeight: 700, fontSize: 14 }}>₹{(item.finalPrice * item.qty).toFixed(2)}</span>
+                        </div>
+                        <div style={{ fontSize:10, color:'var(--text-muted)', marginTop:4, textAlign:'right' }}>
+                          Unit Price: ₹{item.productType === 'service' ? item.mrp.toFixed(2) : item.finalPrice.toFixed(2)}
+                        </div>
+                      </div>
+                    ))}
                   </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, color: 'var(--success)', marginBottom: 8 }}>
-                    <span>Discount</span><span>- ₹{discount.toFixed(2)}</span>
+                  <div style={{ borderTop: '1px solid var(--border)', paddingTop: 14 }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, color: 'var(--text-muted)', marginBottom: 4 }}>
+                      <span>Subtotal</span><span>₹{subtotal.toFixed(2)}</span>
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, color: 'var(--success)', marginBottom: 8 }}>
+                      <span>Discount</span><span>- ₹{discount.toFixed(2)}</span>
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 18, fontWeight: 800, color: 'var(--primary-dark)' }}>
+                      <span>Grand Total</span><span>₹{grandTotal.toFixed(2)}</span>
+                    </div>
                   </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 18, fontWeight: 800, color: 'var(--primary-dark)' }}>
-                    <span>Grand Total</span><span>₹{grandTotal.toFixed(2)}</span>
-                  </div>
-                </div>
-                <button
-                  className="btn btn-success btn-full"
-                  style={{ marginTop: 16, opacity: hasZeroQty ? 0.5 : 1, cursor: hasZeroQty ? 'not-allowed' : 'pointer' }}
-                  onClick={handleCheckout}
-                  disabled={loading || hasZeroQty}
-                  title={hasZeroQty ? 'Fix items with 0 quantity before generating bill' : ''}
-                >
-                  {loading ? 'Processing...' : hasZeroQty ? '⚠️ Fix Quantities First' : '✅ Generate Bill'}
-                </button>
-              </>
-            )}
+                  <button
+                    className="btn btn-success btn-full"
+                    style={{ marginTop: 16, opacity: hasZeroQty ? 0.5 : 1, cursor: hasZeroQty ? 'not-allowed' : 'pointer' }}
+                    onClick={handleCheckout}
+                    disabled={loading || hasZeroQty}
+                    title={hasZeroQty ? 'Fix items with 0 quantity before generating bill' : ''}
+                  >
+                    {loading ? 'Processing...' : hasZeroQty ? '⚠️ Fix Quantities First' : '✅ Generate Bill'}
+                  </button>
+                </>
+              )}
+            </div>
           </div>
         </div>
       )}
     </div>
   )
 }
+

@@ -76,7 +76,9 @@ export default function Dashboard() {
               <h3 style={{ fontSize: 15, fontWeight: 800, marginBottom: 16, color: 'var(--text)' }}>
                 Recent Transactions
               </h3>
-              <div className="table-wrap">
+
+              {/* Desktop: table view */}
+              <div className="table-wrap dash-table-desktop">
                 <table>
                   <thead>
                     <tr>
@@ -90,17 +92,45 @@ export default function Dashboard() {
                     {safeBills.slice(0, 8).map(b => (
                       <tr key={b._id}>
                         <td><span className="badge badge-purple">{b.billNumber}</span></td>
-                        <td style={{ color: 'var(--text-muted)', fontSize: 12 }}>
+                        <td style={{ color: 'var(--text-muted)', fontSize: 12, maxWidth: 180, overflow: 'hidden', textOverflow: 'ellipsis' }}>
                           {b.items.map(i => i.productName).join(', ')}
                         </td>
                         <td style={{ fontWeight: 800, color: 'var(--primary-dark)' }}>{fmt(b.grandTotal)}</td>
-                        <td style={{ color: 'var(--text-muted)', fontSize: 12 }}>
-                          {fmtDate(b.createdAt)} · {fmtTime(b.createdAt)}
+                        <td style={{ color: 'var(--text-muted)', fontSize: 12, whiteSpace: 'nowrap' }}>
+                          {fmtDate(b.createdAt)}<br />{fmtTime(b.createdAt)}
                         </td>
                       </tr>
                     ))}
                   </tbody>
                 </table>
+              </div>
+
+              {/* Mobile: card view */}
+              <div className="dash-cards-mobile">
+                {safeBills.slice(0, 8).map(b => (
+                  <div key={b._id} style={{
+                    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                    padding: '12px 0', borderBottom: '1px solid var(--border)', gap: 10
+                  }}>
+                    {/* Left */}
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+                        <span className="badge badge-purple" style={{ flexShrink: 0 }}>{b.billNumber}</span>
+                        <span style={{ fontSize: 12, color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>
+                          {fmtDate(b.createdAt)}
+                        </span>
+                      </div>
+                      <div style={{ fontSize: 12, color: 'var(--text-muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        {b.items.map(i => i.productName).join(', ')}
+                      </div>
+                    </div>
+                    {/* Right */}
+                    <div style={{ textAlign: 'right', flexShrink: 0 }}>
+                      <div style={{ fontWeight: 800, fontSize: 15, color: 'var(--primary-dark)' }}>{fmt(b.grandTotal)}</div>
+                      <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{fmtTime(b.createdAt)}</div>
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
           )}

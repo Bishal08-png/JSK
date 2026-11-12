@@ -86,7 +86,7 @@ export default function Inventory() {
 
   return (
     <div>
-      <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:24, flexWrap:'wrap', gap:12 }}>
+      <div className="page-header-row" style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:24, flexWrap:'wrap', gap:12 }}>
         <div>
           <h2 style={{ fontSize:22, fontWeight:800 }}>Inventory Management</h2>
           <p style={{ color:'var(--text-muted)', fontSize:13 }}>Manage your products and services</p>
@@ -136,7 +136,7 @@ export default function Inventory() {
             {editId ? `✏️ Edit ${activeTab === 'product' ? 'Product' : 'Service'}` : `➕ Add New ${activeTab === 'product' ? 'Product' : 'Service'}`}
           </h3>
           <form onSubmit={handleSubmit}>
-            <div className="grid grid-2">
+            <div className="grid grid-2 inventory-form-grid">
               <div className="form-group">
                 <label className="form-label">{activeTab === 'product' ? 'Product Name' : 'Service Name'} *</label>
                 <input className="form-control" placeholder={activeTab === 'product' ? "e.g. Classmate Notebook" : "e.g. Xerox (B&W)"} value={form.name} onChange={set('name')} required />
